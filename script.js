@@ -55,29 +55,80 @@ function updateFilters() {
 function loadTrack(index) {
     if (!playlist[index]) return;
     initAudio();
-    loopA = null; loopB = null; document.getElementById('ab-loop-btn').classList.remove('active-blue');
+    
+    // Reset des boucles et styles
+    loopA = null; 
+    loopB = null; 
+    document.getElementById('ab-loop-btn').classList.remove('active-blue');
+    
     currentTrackIndex = index;
     const file = playlist[index];
-    document.getElementById('file-format').innerText = file.name.split('.').pop().toUpperCase();
+
+    // 1. Affichage du Format
+    const ext = file.name.split('.').pop().toUpperCase();
+    document.getElementById('file-format').innerText = ext;
+
+    // 2. Préparation de l'Audio
     audio.src = URL.createObjectURL(file);
-    document.querySelectorAll('#playlist-ul li').forEach((li, i) => li.className = (i === index) ? 'active-track' : '');
     
+    // Estimation du bitrate (se met à jour dès que les métadonnées chargent)
+    audio.onloadedmetadata = () => {
+        const kbps = Math.round((file.size * 8) / audio.duration / 1000);
+        document.getElementById('file-bitrate').innerText = kbps + " KBPS";
+    };
+
+    // Mise à jour visuelle de la playlist
+    document.querySelectorAll('#playlist-ul li').forEach((li, i) => {
+        li.className = (i === index) ? 'active-track' : '';
+    });
+
+    // 3. Lecture des Tags (Métadonnées + Cover)
     if (window.jsmediatags) {
         window.jsmediatags.read(file, {
             onSuccess: (tag) => {
                 const { title, artist, album, picture } = tag.tags;
+                
+                // Texte meta
                 metaDisplay.innerText = `${title || file.name.split('.')[0]} - ${album || "Album"} - ${artist || "Artiste"}`;
+                
+                // Gestion de la Cover (CRITIQUE)
                 if (picture) {
-                    let b64 = ""; for (let i = 0; i < picture.data.length; i++) b64 += String.fromCharCode(picture.data[i]);
-                    document.getElementById('album-art').src = "data:" + picture.format + ";base64," + window.btoa(b64);
-                    document.getElementById('album-art').style.display = "block";
+                    let base64String = "";
+                    for (let i = 0; i < picture.data.length; i++) {
+                        base64String += String.fromCharCode(picture.data[i]);
+                    }
+                    const b64 = window.btoa(base64String);
+                    const imgUrl = `data:${picture.format};base64,${b64}`;
+                    
+                    const artImg = document.getElementById('album-art');
+                    artImg.src = imgUrl;
+                    artImg.style.display = "block";
                     document.getElementById('no-cover-text').style.display = "none";
-                } else { resetCover(); }
+                } else {
+                    resetCover();
+                }
             },
-            onError: () => { metaDisplay.innerText = file.name; resetCover(); }
+            onError: (error) => {
+                console.log('Erreur tags:', error);
+                metaDisplay.innerText = file.name;
+                resetCover();
+            }
         });
     }
-    audio.play().then(() => { if (audioContext.state === 'suspended') audioContext.resume(); playIcon.className = "fa-solid fa-pause"; });
+
+    audio.play().then(() => {
+        if (audioContext.state === 'suspended') audioContext.resume();
+        playIcon.className = "fa-solid fa-pause";
+    });
+}
+
+// Fonction de reset indispensable
+function resetCover() {
+    const artImg = document.getElementById('album-art');
+    artImg.src = "";
+    artImg.style.display = "none";
+    document.getElementById('no-cover-text').style.display = "block";
+    document.getElementById('file-bitrate').innerText = "--- KBPS";
 }
 
 // NAVIGATION & TEMPS
@@ -117,10 +168,43 @@ document.getElementById('repeat-btn').onclick = function() {
 document.getElementById('shuffle-btn').onclick = function() { isShuffle = !isShuffle; this.classList.toggle('active-blue', isShuffle); };
 document.getElementById('time-toggle-btn').onclick = function() { showRemaining = !showRemaining; this.classList.toggle('active-blue', showRemaining); };
 document.getElementById('ab-loop-btn').onclick = function() {
-    if (loopA === null) { loopA = audio.currentTime; this.classList.add('active-blue'); }
-    else if (loopB === null) { loopB = audio.currentTime; }
-    else { loopA = null; loopB = null; this.classList.remove('active-blue'); }
+    const badge = document.getElementById('ab-status-badge');
+    
+    if (loopA === null) {
+        // Premier clic : on fixe A
+        loopA = audio.currentTime;
+        this.classList.add('active-ab-a');
+        this.innerText = "A-";
+    } 
+    else if (loopB === null) {
+        // Deuxième clic : on fixe B
+        loopB = audio.currentTime;
+        this.classList.remove('active-ab-a');
+        this.classList.add('active-ab-b');
+        this.innerText = "A-B";
+        badge.style.display = "block"; // Affiche le badge sur la cover
+    } 
+    else {
+        // Troisième clic : on reset tout
+        loopA = null;
+        loopB = null;
+        this.classList.remove('active-ab-a', 'active-ab-b');
+        this.innerText = "A-B";
+        badge.style.display = "none"; // Cache le badge
+    }
 };
+
+// N'oublie pas de cacher le badge dans ta fonction resetCover ou loadTrack
+function resetABLoop() {
+    loopA = null;
+    loopB = null;
+    const btn = document.getElementById('ab-loop-btn');
+    btn.classList.remove('active-ab-a', 'active-ab-b');
+    btn.innerText = "A-B";
+    document.getElementById('ab-status-badge').style.display = "none";
+}
+
+// Appelle resetABLoop() au début de loadTrack(index)
 
 // MIXER & FILE
 document.getElementById('volume-slider').oninput = (e) => { audio.volume = e.target.value; document.getElementById('val-volume').innerText = Math.round(e.target.value * 100) + "%"; };
