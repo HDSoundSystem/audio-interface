@@ -1,4 +1,4 @@
-// Register Service Worker
+// Register Service Worker pour PWA
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js').catch(err => console.log(err));
@@ -11,7 +11,7 @@ let playlist = [];
 let currentTrackIndex = 0;
 let audioContext, source, bassFilter, trebleFilter;
 let loopA = null, loopB = null;
-let showRemaining = false, isShuffle = false, repeatMode = 0; // 0: None, 1: All, 2: One
+let showRemaining = false, isShuffle = false, repeatMode = 0; 
 
 const playIcon = document.getElementById('play-icon');
 const metaDisplay = document.getElementById('display-meta');
@@ -51,8 +51,6 @@ function updateMediaSession(t, a, alb, art) {
         navigator.mediaSession.setActionHandler('pause', () => togglePlay());
         navigator.mediaSession.setActionHandler('nexttrack', () => nextTrack());
         navigator.mediaSession.setActionHandler('previoustrack', () => prevTrack());
-        navigator.mediaSession.setActionHandler('seekbackward', () => audio.currentTime -= 10);
-        navigator.mediaSession.setActionHandler('seekforward', () => audio.currentTime += 10);
     }
 }
 
@@ -62,6 +60,7 @@ function loadTrack(index) {
     const file = playlist[index];
     audio.src = URL.createObjectURL(file);
     
+    // Update Sidebar visual
     document.querySelectorAll('#playlist-ul li').forEach((li, i) => {
         li.className = (i === index) ? 'active-track' : '';
     });
@@ -116,10 +115,9 @@ function nextTrack() {
 
 function prevTrack() {
     if (currentTrackIndex > 0) loadTrack(currentTrackIndex - 1);
-    else loadTrack(playlist.length - 1);
 }
 
-// Event Listeners
+// Events
 document.getElementById('file-upload').addEventListener('change', (e) => {
     playlist = Array.from(e.target.files);
     const ul = document.getElementById('playlist-ul');
@@ -171,7 +169,7 @@ function formatTime(s) {
     return (s < 0 ? "-" : "") + (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
 }
 
-// Mixer controls
+// Mixeur
 document.getElementById('volume-slider').oninput = (e) => audio.volume = e.target.value;
 document.getElementById('bass-slider').oninput = updateFilters;
 document.getElementById('treble-slider').oninput = updateFilters;
@@ -182,14 +180,16 @@ document.getElementById('mute-btn').onclick = function() { this.classList.toggle
 document.getElementById('bypass-btn').onclick = function() { this.classList.toggle('active-danger'); updateFilters(); };
 document.getElementById('loudness-btn').onclick = function() { this.classList.toggle('active'); updateFilters(); };
 document.getElementById('time-toggle-btn').onclick = function() { showRemaining = !showRemaining; this.classList.toggle('active-danger-text'); };
+
 document.getElementById('ab-loop-btn').onclick = function() {
     if (loopA === null) { loopA = audio.currentTime; this.classList.add('active-danger-text'); }
     else if (loopB === null) { loopB = audio.currentTime; }
     else { loopA = null; loopB = null; this.classList.remove('active-danger-text'); }
 };
+
 document.getElementById('eject-btn').onclick = () => document.getElementById('file-upload').click();
 
-// RST Buttons
+// RST
 document.querySelectorAll('.btn-rst[data-target]').forEach(btn => {
     btn.onclick = () => {
         const t = document.getElementById(btn.dataset.target);
