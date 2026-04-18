@@ -1,3 +1,17 @@
+/**
+ * 1. ENREGISTREMENT DU SERVICE WORKER
+ */
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker enregistré !', reg.scope))
+            .catch(err => console.log('Échec Service Worker :', err));
+    });
+}
+
+/**
+ * 2. LOGIQUE AUDIO & LECTEUR
+ */
 const audio = new Audio();
 audio.volume = 0.05;
 audio.crossOrigin = "anonymous";
@@ -47,6 +61,7 @@ function loadTrack(index) {
     document.getElementById('file-format').innerText = file.name.split('.').pop().toUpperCase();
     audio.src = URL.createObjectURL(file);
     document.querySelectorAll('#playlist-ul li').forEach((li, i) => li.className = (i === index) ? 'active-track' : '');
+    
     if (window.jsmediatags) {
         window.jsmediatags.read(file, {
             onSuccess: (tag) => {
@@ -65,6 +80,7 @@ function loadTrack(index) {
     audio.play().then(() => { if (audioContext.state === 'suspended') audioContext.resume(); playIcon.className = "fa-solid fa-pause"; });
 }
 
+// NAVIGATION & TEMPS
 audio.ontimeupdate = () => {
     if (!audio.duration) return;
     seekSlider.value = (audio.currentTime / audio.duration) * 100;
@@ -76,35 +92,23 @@ audio.ontimeupdate = () => {
 
 function formatTime(s) { const m = Math.floor(s / 60); const sec = Math.floor(s % 60); return (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec); }
 
-document.getElementById('volume-slider').oninput = (e) => { audio.volume = e.target.value; document.getElementById('val-volume').innerText = Math.round(e.target.value * 100) + "%"; };
-document.getElementById('bass-slider').oninput = (e) => { updateFilters(); document.getElementById('val-bass').innerText = e.target.value + "dB"; };
-document.getElementById('treble-slider').oninput = (e) => { updateFilters(); document.getElementById('val-treble').innerText = e.target.value + "dB"; };
-document.getElementById('pitch-slider').oninput = (e) => { audio.playbackRate = e.target.value; document.getElementById('val-pitch').innerText = Math.round(e.target.value * 100) + "%"; };
-
-document.getElementById('art-trigger').onclick = function() {
-    const modal = document.getElementById('modal-overlay');
-    const artImg = document.getElementById('album-art');
-    document.getElementById('modal-img').src = artImg.src || "";
-    document.getElementById('modal-img').style.display = artImg.src ? "block" : "none";
-    const parts = metaDisplay.innerText.split(' - ');
-    document.getElementById('modal-title').innerText = parts[0] || "";
-    document.getElementById('modal-album').innerText = parts[1] || "";
-    document.getElementById('modal-artist').innerText = parts[2] || "";
-    modal.style.display = 'flex';
-};
-document.getElementById('close-modal').onclick = () => document.getElementById('modal-overlay').style.display = 'none';
+// EVENT LISTENERS CONTROLES
+document.getElementById('rewind-btn').onclick = () => audio.currentTime = Math.max(0, audio.currentTime - 10);
+document.getElementById('forward-btn').onclick = () => audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
 
 document.getElementById('play-pause').onclick = () => {
     initAudio(); if (audioContext.state === 'suspended') audioContext.resume();
     if (audio.paused) { audio.play(); playIcon.className = "fa-solid fa-pause"; }
     else { audio.pause(); playIcon.className = "fa-solid fa-play"; }
 };
+
 document.getElementById('next-btn').onclick = () => {
     if (isShuffle) loadTrack(Math.floor(Math.random() * playlist.length));
     else if (currentTrackIndex < playlist.length - 1) loadTrack(currentTrackIndex + 1);
 };
 document.getElementById('prev-btn').onclick = () => { if (currentTrackIndex > 0) loadTrack(currentTrackIndex - 1); };
 
+// REPEAT / SHUFFLE / TIME / AB
 document.getElementById('repeat-btn').onclick = function() {
     repeatMode = (repeatMode + 1) % 3;
     this.classList.toggle('active-blue', repeatMode > 0);
@@ -118,12 +122,31 @@ document.getElementById('ab-loop-btn').onclick = function() {
     else { loopA = null; loopB = null; this.classList.remove('active-blue'); }
 };
 
+// MIXER & FILE
+document.getElementById('volume-slider').oninput = (e) => { audio.volume = e.target.value; document.getElementById('val-volume').innerText = Math.round(e.target.value * 100) + "%"; };
+document.getElementById('bass-slider').oninput = (e) => { updateFilters(); document.getElementById('val-bass').innerText = e.target.value + "dB"; };
+document.getElementById('treble-slider').oninput = (e) => { updateFilters(); document.getElementById('val-treble').innerText = e.target.value + "dB"; };
+document.getElementById('pitch-slider').oninput = (e) => { audio.playbackRate = e.target.value; document.getElementById('val-pitch').innerText = Math.round(e.target.value * 100) + "%"; };
+
 document.getElementById('file-upload').onchange = (e) => {
     playlist = Array.from(e.target.files);
     const ul = document.getElementById('playlist-ul'); ul.innerHTML = "";
     playlist.forEach((f, i) => { const li = document.createElement('li'); li.innerText = f.name.split('.')[0]; li.onclick = () => loadTrack(i); ul.appendChild(li); });
     if (playlist.length > 0) loadTrack(0);
 };
+
+document.getElementById('art-trigger').onclick = function() {
+    const modal = document.getElementById('modal-overlay');
+    const artImg = document.getElementById('album-art');
+    document.getElementById('modal-img').src = artImg.src || "";
+    document.getElementById('modal-img').style.display = artImg.src ? "block" : "none";
+    const parts = metaDisplay.innerText.split(' - ');
+    document.getElementById('modal-title').innerText = parts[0] || "";
+    document.getElementById('modal-album').innerText = parts[1] || "";
+    document.getElementById('modal-artist').innerText = parts[2] || "";
+    modal.style.display = 'flex';
+};
+document.getElementById('close-modal').onclick = () => document.getElementById('modal-overlay').style.display = 'none';
 
 document.getElementById('loudness-btn').onclick = function() { this.classList.toggle('active'); updateFilters(); };
 document.getElementById('bypass-btn').onclick = function() { this.classList.toggle('active-danger'); updateFilters(); };

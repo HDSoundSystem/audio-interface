@@ -1,6 +1,6 @@
 :root {
     --bg-color: #0f1012; --panel-color: #1a1c20; --sidebar-color: #141518;
-    --accent: #00d4ff; --text-main: #e0e0e0; --glass: rgba(255, 255, 255, 0.05); --danger: #ff4444;
+    --accent: #00d4ff; --text-main: #e0e0e0; --danger: #ff4444;
 }
 body { background: var(--bg-color); color: var(--text-main); font-family: 'Nunito', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
 
@@ -18,32 +18,29 @@ body { background: var(--bg-color); color: var(--text-main); font-family: 'Nunit
 .display-section { background: #000; padding: 20px; border-radius: 15px; border: 1px solid #333; display: flex; flex-direction: column; align-items: center; flex-grow: 1; }
 .album-art-container { position: relative; width: 100%; aspect-ratio: 1/1; max-height: 220px; background: #0a0a0a; margin-bottom: 15px; border-radius: 10px; display: flex; justify-content: center; align-items: center; border: 1px solid #333; cursor: pointer; }
 #album-art { height: 100%; width: 100%; object-fit: contain; }
-#file-format { position: absolute; top: 10px; left: 10px; background: var(--accent); color: #000; font-size: 0.65rem; font-weight: 900; padding: 3px 8px; border-radius: 4px; z-index: 10; text-transform: uppercase; }
+#file-format { position: absolute; top: 10px; left: 10px; background: var(--accent); color: #000; font-size: 0.65rem; font-weight: 900; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; z-index: 10; }
 
 #display-meta { font-weight: 900; font-size: 1rem; color: var(--accent); text-align: center; margin-bottom: 15px; width: 100%; }
 .time-rail { display: flex; align-items: center; gap: 15px; width: 100%; }
 .time-box { font-weight: 700; width: 60px; text-align: center; font-size: 0.8rem; }
 #seek-slider { flex-grow: 1; accent-color: var(--accent); }
 
-/* CONTROLES */
-.controls-main { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; }
+.controls-main { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; width: 100%; }
 .control-subgroup { display: flex; align-items: center; gap: 15px; flex: 1; }
-.control-subgroup.main-nav { justify-content: center; flex: 2; }
+.control-subgroup.main-nav { justify-content: center; flex: 2.5; gap: 20px; }
 .control-subgroup.right { justify-content: flex-end; }
 .btn-play { width: 60px; height: 60px; background: var(--accent); border-radius: 50%; border: none; cursor: pointer; font-size: 1.4rem; display: flex; justify-content: center; align-items: center; }
 .secondary { background: none; border: none; color: #444; font-size: 1.1rem; cursor: pointer; }
 
-/* MIXEUR - GRILLE */
 .mixer-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px 10px; padding: 20px; justify-items: center; }
 .fx-section-inline { grid-column: 1 / span 3; display: flex; gap: 10px; width: 100%; padding: 15px 0; border-top: 1px solid #2a2d32; border-bottom: 1px solid #2a2d32; margin: 10px 0; }
 .btn-toggle { flex: 1; background: #222; color: #777; border: 1px solid #444; padding: 10px; font-weight: 900; font-size: 0.7rem; cursor: pointer; border-radius: 5px; }
 .control-group { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
-.control-group label { font-size: 0.6rem; font-weight: 900; color: #555; white-space: nowrap; }
+.control-group label { font-size: 0.6rem; font-weight: 900; color: #555; }
 .vertical-slider { appearance: slider-vertical; width: 8px; height: 100px; accent-color: var(--accent); cursor: pointer; }
 .pitch-area { grid-column: 2; margin-top: 5px; }
 .btn-rst { background: #2a2d32; color: #666; font-size: 0.6rem; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; }
 
-/* ETATS ACTIFS */
 #mute-btn.active-danger, #bypass-btn.active-danger { background: var(--danger); color: #fff; }
 .active-blue { color: var(--accent) !important; }
 #loudness-btn.active { background: var(--accent); color: #000; }
