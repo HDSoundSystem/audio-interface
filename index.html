@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Audio Mixer - Side Playlist</title>
+    <title>Pro Audio Mixer - Studio Edition</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
@@ -14,9 +14,7 @@
 
 <div class="main-app-wrapper">
     <aside class="playlist-sidebar">
-        <div class="sidebar-header">
-            <i class="fa-solid fa-list-ul"></i> PLAYLIST
-        </div>
+        <div class="sidebar-header"><i class="fa-solid fa-list-ul"></i> PLAYLIST</div>
         <ul id="playlist-ul">
             <li class="empty-msg">Aucun fichier chargé</li>
         </ul>
@@ -24,14 +22,12 @@
 
     <main class="player-container">
         <header class="display-section">
-            <div class="album-art-container">
+            <div class="album-art-container" id="art-trigger">
                 <span id="no-cover-text">NO COVER</span>
                 <img id="album-art" src="" alt="Album Art" style="display: none;">
             </div>
 
-            <div class="track-info">
-                <div id="display-meta">CHARGEZ VOS FICHIERS</div>
-            </div>
+            <div id="display-meta">CHARGEZ VOS FICHIERS</div>
             
             <div class="time-rail">
                 <span id="current-time" class="time-box">00:00</span>
@@ -39,38 +35,6 @@
                 <span id="duration" class="time-box">00:00</span>
             </div>
         </header>
-
-        <div class="mixer-section">
-            <div class="control-group">
-                <label>VOL</label>
-                <input type="range" id="volume-slider" class="vertical-slider" min="0" max="1" step="0.01" value="0.05">
-                <button class="btn-rst" id="mute-btn">MUTE</button>
-            </div>
-            
-            <div class="control-group">
-                <label>LOW</label>
-                <input type="range" id="bass-slider" class="vertical-slider" min="-20" max="20" step="1" value="0">
-                <button class="btn-rst" data-target="bass-slider">RST</button>
-            </div>
-
-            <div class="control-group">
-                <label>HI</label>
-                <input type="range" id="treble-slider" class="vertical-slider" min="-20" max="20" step="1" value="0">
-                <button class="btn-rst" data-target="treble-slider">RST</button>
-            </div>
-
-            <div class="control-group">
-                <label>EQ/FX</label>
-                <button id="loudness-btn" class="btn-toggle">LOUD</button>
-                <button id="bypass-btn" class="btn-toggle">BYPASS</button>
-            </div>
-
-            <div class="control-group">
-                <label>PITCH</label>
-                <input type="range" id="pitch-slider" class="vertical-slider" min="0.5" max="1.5" step="0.01" value="1">
-                <button class="btn-rst" data-target="pitch-slider">RST</button>
-            </div>
-        </div>
 
         <footer class="controls-main">
             <div class="control-subgroup">
@@ -98,13 +62,48 @@
             <button class="btn-tool"><i class="fa-solid fa-gear"></i></button>
         </nav>
     </main>
+
+    <aside class="mixer-sidebar">
+        <div class="sidebar-header"><i class="fa-solid fa-sliders"></i> MIXER</div>
+        
+        <div class="mixer-grid">
+            <div class="control-group">
+                <label>VOL</label>
+                <input type="range" id="volume-slider" class="vertical-slider" min="0" max="1" step="0.01" value="0.05">
+                <button class="btn-rst" id="mute-btn">MUTE</button>
+            </div>
+            
+            <div class="control-group">
+                <label>LOW</label>
+                <input type="range" id="bass-slider" class="vertical-slider" min="-20" max="20" step="1" value="0">
+                <button class="btn-rst" data-target="bass-slider">RST</button>
+            </div>
+
+            <div class="control-group">
+                <label>HI</label>
+                <input type="range" id="treble-slider" class="vertical-slider" min="-20" max="20" step="1" value="0">
+                <button class="btn-rst" data-target="treble-slider">RST</button>
+            </div>
+
+            <div class="control-group">
+                <label>PITCH</label>
+                <input type="range" id="pitch-slider" class="vertical-slider" min="0.5" max="1.5" step="0.01" value="1">
+                <button class="btn-rst" data-target="pitch-slider">RST</button>
+            </div>
+        </div>
+
+        <div class="fx-section">
+            <button id="loudness-btn" class="btn-toggle">LOUDNESS</button>
+            <button id="bypass-btn" class="btn-toggle">BYPASS EQ</button>
+        </div>
+    </aside>
 </div>
 
 <div id="modal-overlay" class="modal-overlay">
     <div class="modal-content">
-        <img id="modal-img" src="" alt="Grand Format">
+        <img id="modal-img" src="" alt="Cover">
         <div class="modal-info">
-            <h2 id="modal-title">Titre du morceau</h2>
+            <h2 id="modal-title">Titre</h2>
             <h3 id="modal-artist">Artiste</h3>
             <p id="modal-album">Album</p>
         </div>
