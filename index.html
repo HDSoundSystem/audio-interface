@@ -39,6 +39,14 @@
             <label>LOW</label>
             <input type="range" id="bass-slider" orient="vertical" min="-20" max="20" step="1" value="0">
             <span id="bass-val" class="val-label">0dB</span>
+            <button class="btn-rst" data-target="bass-slider">RST</button>
+        </div>
+
+        <div class="control-group">
+            <label>HI</label>
+            <input type="range" id="treble-slider" orient="vertical" min="-20" max="20" step="1" value="0">
+            <span id="treble-val" class="val-label">0dB</span>
+            <button class="btn-rst" data-target="treble-slider">RST</button>
         </div>
 
         <div class="control-group buttons-stack">
@@ -48,15 +56,10 @@
         </div>
 
         <div class="control-group">
-            <label>HI</label>
-            <input type="range" id="treble-slider" orient="vertical" min="-20" max="20" step="1" value="0">
-            <span id="treble-val" class="val-label">0dB</span>
-        </div>
-
-        <div class="control-group">
             <label>PITCH</label>
             <input type="range" id="pitch-slider" orient="vertical" min="0.5" max="1.5" step="0.01" value="1">
             <span id="pitch-val" class="val-label">1.0x</span>
+            <button class="btn-rst" data-target="pitch-slider">RST</button>
         </div>
     </div>
 
@@ -78,9 +81,7 @@
 
     <nav class="extra-functions">
         <input type="file" id="file-upload" style="display:none" accept="audio/*">
-        <button id="eject-btn" class="btn-tool" title="Ajouter des fichiers">
-            <i class="fa-solid fa-eject"></i>
-        </button>
+        <button id="eject-btn" class="btn-tool" title="Ajouter des fichiers"><i class="fa-solid fa-eject"></i></button>
         <button class="btn-tool"><i class="fa-solid fa-list-ul"></i></button>
         <button class="btn-tool"><i class="fa-solid fa-sliders"></i></button>
         <button class="btn-tool"><i class="fa-solid fa-gear"></i></button>

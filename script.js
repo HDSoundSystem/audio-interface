@@ -5,6 +5,7 @@ let audioContext, source, bassFilter, trebleFilter;
 let loopA = null, loopB = null;
 let showRemainingTime = false;
 
+// Sélections
 const playBtn = document.getElementById('play-pause');
 const playIcon = document.getElementById('play-icon');
 const fileUpload = document.getElementById('file-upload');
@@ -18,82 +19,87 @@ const timeToggleBtn = document.getElementById('time-toggle-btn');
 const loudnessBtn = document.getElementById('loudness-btn');
 const bypassBtn = document.getElementById('bypass-btn');
 
-const bassSlider = document.getElementById('bass-slider');
-const trebleSlider = document.getElementById('treble-slider');
+const sliders = {
+    'bass-slider': { element: document.getElementById('bass-slider'), label: document.getElementById('bass-val'), default: 0, suffix: 'dB' },
+    'treble-slider': { element: document.getElementById('treble-slider'), label: document.getElementById('treble-val'), default: 0, suffix: 'dB' },
+    'pitch-slider': { element: document.getElementById('pitch-slider'), label: document.getElementById('pitch-val'), default: 1.0, suffix: 'x' }
+};
 
 function initAudioEngine() {
     if (audioContext) return;
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     source = audioContext.createMediaElementSource(audio);
-    
     bassFilter = audioContext.createBiquadFilter();
     bassFilter.type = "lowshelf";
     bassFilter.frequency.value = 200;
-
     trebleFilter = audioContext.createBiquadFilter();
     trebleFilter.type = "highshelf";
     trebleFilter.frequency.value = 3000;
-
     source.connect(bassFilter);
     bassFilter.connect(trebleFilter);
     trebleFilter.connect(audioContext.destination);
 }
 
-// MISE À JOUR FILTRES (Calcul centralisé pour Bypass/Loudness)
+// MISE À JOUR FILTRES
 function updateFilters() {
     if (!bassFilter || !trebleFilter) return;
-
     if (bypassBtn.classList.contains('active')) {
-        // Mode BYPASS : On remet tout à zéro sans toucher aux sliders
         bassFilter.gain.value = 0;
         trebleFilter.gain.value = 0;
     } else {
-        let bGain = parseFloat(bassSlider.value);
-        let tGain = parseFloat(trebleSlider.value);
-
-        if (loudnessBtn.classList.contains('active')) {
-            bGain += 12; // Boost Loudness
-            tGain += 8;
-        }
-
+        let bGain = parseFloat(sliders['bass-slider'].element.value);
+        let tGain = parseFloat(sliders['treble-slider'].element.value);
+        if (loudnessBtn.classList.contains('active')) { bGain += 12; tGain += 8; }
         bassFilter.gain.value = bGain;
         trebleFilter.gain.value = tGain;
     }
 }
 
-// ÉVÉNEMENTS BOUTONS
-loudnessBtn.addEventListener('click', () => {
-    initAudioEngine();
-    loudnessBtn.classList.toggle('active');
-    updateFilters();
+// LOGIQUE BOUTONS RST
+document.querySelectorAll('.btn-rst').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const targetId = e.target.getAttribute('data-target');
+        const sliderData = sliders[targetId];
+        sliderData.element.value = sliderData.default;
+        
+        // Mise à jour visuelle et sonore
+        if (targetId === 'pitch-slider') {
+            audio.playbackRate = sliderData.default;
+            sliderData.label.innerText = "1.0x";
+        } else {
+            sliderData.label.innerText = "0dB";
+            updateFilters();
+        }
+    });
 });
 
-bypassBtn.addEventListener('click', () => {
-    initAudioEngine();
-    bypassBtn.classList.toggle('active');
+// ÉVÉNEMENTS EQ/FX
+loudnessBtn.addEventListener('click', () => { initAudioEngine(); loudnessBtn.classList.toggle('active'); updateFilters(); });
+bypassBtn.addEventListener('click', () => { initAudioEngine(); bypassBtn.classList.toggle('active'); updateFilters(); });
+
+sliders['bass-slider'].element.addEventListener('input', (e) => {
+    sliders['bass-slider'].label.innerText = e.target.value + "dB";
     updateFilters();
 });
-
-bassSlider.addEventListener('input', (e) => {
-    document.getElementById('bass-val').innerText = e.target.value + "dB";
+sliders['treble-slider'].element.addEventListener('input', (e) => {
+    sliders['treble-slider'].label.innerText = e.target.value + "dB";
     updateFilters();
 });
-
-trebleSlider.addEventListener('input', (e) => {
-    document.getElementById('treble-val').innerText = e.target.value + "dB";
-    updateFilters();
+sliders['pitch-slider'].element.addEventListener('input', (e) => {
+    audio.playbackRate = e.target.value;
+    sliders['pitch-slider'].label.innerText = parseFloat(e.target.value).toFixed(2) + "x";
 });
 
-// LOGIQUE TEMPS RESTANT
+// TEMPS & TRANSPORT
 timeToggleBtn.addEventListener('click', () => {
     showRemainingTime = !showRemainingTime;
     timeToggleBtn.classList.toggle('active-time');
 });
 
-function formatTime(seconds) {
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
-    return `${m}:${s < 10 ? '0' + s : s}`;
+function formatTime(s) {
+    const min = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${min}:${sec < 10 ? '0' + sec : sec}`;
 }
 
 audio.addEventListener('timeupdate', () => {
@@ -105,7 +111,7 @@ audio.addEventListener('timeupdate', () => {
     if(audio.duration) document.getElementById('duration').innerText = formatTime(audio.duration);
 });
 
-// CHARGEMENT ET TRANSPORT (Standard)
+// CHARGEMENT ET PLAY
 document.getElementById('eject-btn').addEventListener('click', () => fileUpload.click());
 fileUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -144,11 +150,6 @@ document.getElementById('rewind-btn').addEventListener('click', () => audio.curr
 document.getElementById('forward-btn').addEventListener('click', () => audio.currentTime += 5);
 seekSlider.addEventListener('input', (e) => { if (audio.duration) audio.currentTime = audio.duration * (e.target.value / 100); });
 document.getElementById('volume-slider').addEventListener('input', (e) => audio.volume = e.target.value);
-
-document.getElementById('pitch-slider').addEventListener('input', (e) => {
-    audio.playbackRate = e.target.value;
-    document.getElementById('pitch-val').innerText = parseFloat(e.target.value).toFixed(2) + "x";
-});
 
 abBtn.addEventListener('click', () => {
     if (loopA === null) { loopA = audio.currentTime; abBtn.innerText = "A-"; abBtn.classList.add('active-ab'); }
