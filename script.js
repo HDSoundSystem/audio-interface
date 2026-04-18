@@ -3,7 +3,7 @@ audio.volume = 0.05;
 
 let audioContext, source, bassFilter, trebleFilter;
 let loopA = null, loopB = null;
-let showRemainingTime = false; // Pour l'horloge
+let showRemainingTime = false;
 
 const playBtn = document.getElementById('play-pause');
 const playIcon = document.getElementById('play-icon');
@@ -16,6 +16,10 @@ const noCoverText = document.getElementById('no-cover-text');
 const abBtn = document.getElementById('ab-loop-btn');
 const timeToggleBtn = document.getElementById('time-toggle-btn');
 const loudnessBtn = document.getElementById('loudness-btn');
+const bypassBtn = document.getElementById('bypass-btn');
+
+const bassSlider = document.getElementById('bass-slider');
+const trebleSlider = document.getElementById('treble-slider');
 
 function initAudioEngine() {
     if (audioContext) return;
@@ -35,19 +39,49 @@ function initAudioEngine() {
     trebleFilter.connect(audioContext.destination);
 }
 
-// LOGIQUE LOUDNESS (Boost Low et High simultanément)
+// MISE À JOUR FILTRES (Calcul centralisé pour Bypass/Loudness)
+function updateFilters() {
+    if (!bassFilter || !trebleFilter) return;
+
+    if (bypassBtn.classList.contains('active')) {
+        // Mode BYPASS : On remet tout à zéro sans toucher aux sliders
+        bassFilter.gain.value = 0;
+        trebleFilter.gain.value = 0;
+    } else {
+        let bGain = parseFloat(bassSlider.value);
+        let tGain = parseFloat(trebleSlider.value);
+
+        if (loudnessBtn.classList.contains('active')) {
+            bGain += 12; // Boost Loudness
+            tGain += 8;
+        }
+
+        bassFilter.gain.value = bGain;
+        trebleFilter.gain.value = tGain;
+    }
+}
+
+// ÉVÉNEMENTS BOUTONS
 loudnessBtn.addEventListener('click', () => {
     initAudioEngine();
     loudnessBtn.classList.toggle('active');
-    if (loudnessBtn.classList.contains('active')) {
-        loudnessBtn.innerText = "ON";
-        bassFilter.gain.value += 12;
-        trebleFilter.gain.value += 8;
-    } else {
-        loudnessBtn.innerText = "OFF";
-        bassFilter.gain.value = document.getElementById('bass-slider').value;
-        trebleFilter.gain.value = document.getElementById('treble-slider').value;
-    }
+    updateFilters();
+});
+
+bypassBtn.addEventListener('click', () => {
+    initAudioEngine();
+    bypassBtn.classList.toggle('active');
+    updateFilters();
+});
+
+bassSlider.addEventListener('input', (e) => {
+    document.getElementById('bass-val').innerText = e.target.value + "dB";
+    updateFilters();
+});
+
+trebleSlider.addEventListener('input', (e) => {
+    document.getElementById('treble-val').innerText = e.target.value + "dB";
+    updateFilters();
 });
 
 // LOGIQUE TEMPS RESTANT
@@ -63,25 +97,15 @@ function formatTime(seconds) {
 }
 
 audio.addEventListener('timeupdate', () => {
-    if (loopA !== null && loopB !== null && audio.currentTime >= loopB) {
-        audio.currentTime = loopA;
-    }
-    
+    if (loopA !== null && loopB !== null && audio.currentTime >= loopB) audio.currentTime = loopA;
     seekSlider.value = (audio.currentTime / audio.duration) * 100 || 0;
-    
     const timeDisplay = document.getElementById('current-time');
-    if (showRemainingTime && audio.duration) {
-        timeDisplay.innerText = "-" + formatTime(audio.duration - audio.currentTime);
-    } else {
-        timeDisplay.innerText = formatTime(audio.currentTime);
-    }
-
-    if(audio.duration) {
-        document.getElementById('duration').innerText = formatTime(audio.duration);
-    }
+    if (showRemainingTime && audio.duration) timeDisplay.innerText = "-" + formatTime(audio.duration - audio.currentTime);
+    else timeDisplay.innerText = formatTime(audio.currentTime);
+    if(audio.duration) document.getElementById('duration').innerText = formatTime(audio.duration);
 });
 
-// CHARGEMENT FICHIER
+// CHARGEMENT ET TRANSPORT (Standard)
 document.getElementById('eject-btn').addEventListener('click', () => fileUpload.click());
 fileUpload.addEventListener('change', (e) => {
     const file = e.target.files[0];
@@ -99,7 +123,7 @@ fileUpload.addEventListener('change', (e) => {
                         albumArt.src = "data:" + data.format + ";base64," + window.btoa(base);
                         albumArt.style.display = "block";
                         noCoverText.style.display = "none";
-                    } else { resetArt(); }
+                    } else resetArt();
                 },
                 onError: () => resetArt()
             });
@@ -116,21 +140,10 @@ playBtn.addEventListener('click', () => {
     else { audio.pause(); playIcon.className = "fa-solid fa-play"; playBtn.classList.remove('active-play'); }
 });
 
-// CONTROLES STANDARDS
 document.getElementById('rewind-btn').addEventListener('click', () => audio.currentTime -= 5);
 document.getElementById('forward-btn').addEventListener('click', () => audio.currentTime += 5);
 seekSlider.addEventListener('input', (e) => { if (audio.duration) audio.currentTime = audio.duration * (e.target.value / 100); });
 document.getElementById('volume-slider').addEventListener('input', (e) => audio.volume = e.target.value);
-
-document.getElementById('bass-slider').addEventListener('input', (e) => {
-    if (bassFilter && !loudnessBtn.classList.contains('active')) bassFilter.gain.value = e.target.value;
-    document.getElementById('bass-val').innerText = e.target.value + "dB";
-});
-
-document.getElementById('treble-slider').addEventListener('input', (e) => {
-    if (trebleFilter && !loudnessBtn.classList.contains('active')) trebleFilter.gain.value = e.target.value;
-    document.getElementById('treble-val').innerText = e.target.value + "dB";
-});
 
 document.getElementById('pitch-slider').addEventListener('input', (e) => {
     audio.playbackRate = e.target.value;

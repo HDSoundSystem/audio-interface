@@ -19,7 +19,7 @@ body {
 
 .player-container {
     background: var(--panel-color);
-    width: 600px; /* Élargi pour le bouton loudness */
+    width: 620px;
     padding: 30px;
     border-radius: 30px;
     box-shadow: 0 40px 80px rgba(0,0,0,0.7);
@@ -55,23 +55,26 @@ body {
 .time-rail { display: flex; align-items: center; gap: 15px; font-size: 0.7rem; font-family: monospace; width: 100%; }
 #seek-slider { flex-grow: 1; height: 4px; accent-color: var(--accent); cursor: pointer; }
 
-/* Mixer & Loudness Button */
+/* Mixer & Buttons */
 .mixer-section {
     display: flex; justify-content: space-between;
     padding: 20px; background: var(--glass);
     border-radius: 15px; margin-bottom: 20px;
 }
-.control-group { display: flex; flex-direction: column; align-items: center; gap: 10px; justify-content: center;}
+.control-group { display: flex; flex-direction: column; align-items: center; gap: 10px; justify-content: flex-end; }
+.buttons-stack { gap: 8px; justify-content: center; } /* Pour aligner Loud et Bypass */
+
 .control-group label { font-size: 0.6rem; font-weight: bold; color: #888; }
 input[orient="vertical"] { appearance: slider-vertical; width: 8px; height: 110px; accent-color: var(--accent); }
 .val-label { font-size: 0.7rem; color: var(--accent); }
 
 .btn-toggle {
     background: #222; border: 1px solid #444; color: #777;
-    padding: 10px 5px; border-radius: 5px; cursor: pointer;
+    width: 60px; padding: 8px 0; border-radius: 5px; cursor: pointer;
     font-size: 0.6rem; font-weight: bold; transition: 0.2s;
 }
 .btn-toggle.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 10px var(--accent); }
+#bypass-btn.active { background: #ff4444; color: #fff; border-color: #ff4444; box-shadow: 0 0 10px #ff4444; }
 
 /* Transport */
 .controls-main { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 25px; }
@@ -80,10 +83,9 @@ input[orient="vertical"] { appearance: slider-vertical; width: 8px; height: 110p
     border-radius: 50%; font-size: 1.5rem; border: none; cursor: pointer;
     display: flex; justify-content: center; align-items: center; transition: 0.2s;
 }
-.btn-play:hover { transform: scale(1.1); }
 .active-play { background: #fff; color: var(--accent); }
 .secondary { font-size: 1.1rem !important; color: #555 !important; border: none; background: none; cursor: pointer; }
-.secondary.active-time { color: var(--accent) !important; }
+.active-time { color: var(--accent) !important; }
 
 .extra-functions { display: flex; justify-content: space-between; padding-top: 20px; border-top: 1px solid #2a2d32; }
 .btn-tool { background: none; border: none; color: #444; font-size: 1rem; cursor: pointer; }
