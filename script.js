@@ -55,12 +55,12 @@ function updateFilters() {
 function loadTrack(index) {
     if (!playlist[index]) return;
     initAudio();
-    
+
     // Reset des boucles et styles
-    loopA = null; 
-    loopB = null; 
+    loopA = null;
+    loopB = null;
     document.getElementById('ab-loop-btn').classList.remove('active-blue');
-    
+
     currentTrackIndex = index;
     const file = playlist[index];
 
@@ -70,7 +70,7 @@ function loadTrack(index) {
 
     // 2. Préparation de l'Audio
     audio.src = URL.createObjectURL(file);
-    
+
     // Estimation du bitrate (se met à jour dès que les métadonnées chargent)
     audio.onloadedmetadata = () => {
         const kbps = Math.round((file.size * 8) / audio.duration / 1000);
@@ -87,10 +87,10 @@ function loadTrack(index) {
         window.jsmediatags.read(file, {
             onSuccess: (tag) => {
                 const { title, artist, album, picture } = tag.tags;
-                
+
                 // Texte meta
                 metaDisplay.innerText = `${title || file.name.split('.')[0]} - ${album || "Album"} - ${artist || "Artiste"}`;
-                
+
                 // Gestion de la Cover (CRITIQUE)
                 if (picture) {
                     let base64String = "";
@@ -99,7 +99,7 @@ function loadTrack(index) {
                     }
                     const b64 = window.btoa(base64String);
                     const imgUrl = `data:${picture.format};base64,${b64}`;
-                    
+
                     const artImg = document.getElementById('album-art');
                     artImg.src = imgUrl;
                     artImg.style.display = "block";
@@ -160,22 +160,22 @@ document.getElementById('next-btn').onclick = () => {
 document.getElementById('prev-btn').onclick = () => { if (currentTrackIndex > 0) loadTrack(currentTrackIndex - 1); };
 
 // REPEAT / SHUFFLE / TIME / AB
-document.getElementById('repeat-btn').onclick = function() {
+document.getElementById('repeat-btn').onclick = function () {
     repeatMode = (repeatMode + 1) % 3;
     this.classList.toggle('active-blue', repeatMode > 0);
     this.querySelector('i').className = repeatMode === 2 ? "fa-solid fa-arrows-rotate" : "fa-solid fa-repeat";
 };
-document.getElementById('shuffle-btn').onclick = function() { isShuffle = !isShuffle; this.classList.toggle('active-blue', isShuffle); };
-document.getElementById('time-toggle-btn').onclick = function() { showRemaining = !showRemaining; this.classList.toggle('active-blue', showRemaining); };
-document.getElementById('ab-loop-btn').onclick = function() {
+document.getElementById('shuffle-btn').onclick = function () { isShuffle = !isShuffle; this.classList.toggle('active-blue', isShuffle); };
+document.getElementById('time-toggle-btn').onclick = function () { showRemaining = !showRemaining; this.classList.toggle('active-blue', showRemaining); };
+document.getElementById('ab-loop-btn').onclick = function () {
     const badge = document.getElementById('ab-status-badge');
-    
+
     if (loopA === null) {
         // Premier clic : on fixe A
         loopA = audio.currentTime;
         this.classList.add('active-ab-a');
         this.innerText = "A-";
-    } 
+    }
     else if (loopB === null) {
         // Deuxième clic : on fixe B
         loopB = audio.currentTime;
@@ -183,7 +183,7 @@ document.getElementById('ab-loop-btn').onclick = function() {
         this.classList.add('active-ab-b');
         this.innerText = "A-B";
         badge.style.display = "block"; // Affiche le badge sur la cover
-    } 
+    }
     else {
         // Troisième clic : on reset tout
         loopA = null;
@@ -219,7 +219,7 @@ document.getElementById('file-upload').onchange = (e) => {
     if (playlist.length > 0) loadTrack(0);
 };
 
-document.getElementById('art-trigger').onclick = function() {
+document.getElementById('art-trigger').onclick = function () {
     const modal = document.getElementById('modal-overlay');
     const artImg = document.getElementById('album-art');
     document.getElementById('modal-img').src = artImg.src || "";
@@ -232,9 +232,9 @@ document.getElementById('art-trigger').onclick = function() {
 };
 document.getElementById('close-modal').onclick = () => document.getElementById('modal-overlay').style.display = 'none';
 
-document.getElementById('loudness-btn').onclick = function() { this.classList.toggle('active'); updateFilters(); };
-document.getElementById('bypass-btn').onclick = function() { this.classList.toggle('active-danger'); updateFilters(); };
-document.getElementById('mute-btn').onclick = function() { this.classList.toggle('active-danger'); audio.muted = !audio.muted; };
+document.getElementById('loudness-btn').onclick = function () { this.classList.toggle('active'); updateFilters(); };
+document.getElementById('bypass-btn').onclick = function () { this.classList.toggle('active-danger'); updateFilters(); };
+document.getElementById('mute-btn').onclick = function () { this.classList.toggle('active-danger'); audio.muted = !audio.muted; };
 document.getElementById('eject-btn').onclick = () => document.getElementById('file-upload').click();
 document.querySelectorAll('.btn-rst[data-target]').forEach(btn => {
     btn.onclick = () => { const t = document.getElementById(btn.dataset.target); t.value = btn.dataset.target === 'pitch-slider' ? 1 : 0; t.dispatchEvent(new Event('input')); };
