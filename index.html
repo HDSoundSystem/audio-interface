@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pioneer XDJ-1000MK2</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="xdj-unit">
+    <div class="screen-container">
+        <div class="lcd-screen">
+            <div class="lcd-header">
+                <span><i class="fa-solid fa-usb"></i> USB</span>
+                <span class="track-key">Gm</span>
+            </div>
+            <div class="lcd-main">
+                <div class="track-title">Big</div>
+                <div class="time">02:26.096</div>
+                <div class="waveform-placeholder"></div>
+            </div>
+            <div class="bpm-display">
+                <small>BPM</small>
+                <div>123.0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-interface">
+        <div class="jog-section">
+            <div class="jog-wheel">
+                <div class="jog-center">
+                    <span class="vinyl-text">VINYL</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="pitch-section">
+            <div class="pitch-labels">
+                <span>+</span>
+                <span>0</span>
+                <span>-</span>
+            </div>
+            <input type="range" class="pitch-fader" min="-10" max="10" step="0.1" value="0">
+            <div class="tempo-tag">TEMPO</div>
+        </div>
+    </div>
+
+    <div class="bottom-interface">
+        <div class="transport-group">
+            <button id="cue-btn" class="round-btn cue-btn">CUE</button>
+            <button id="play-btn" class="round-btn play-btn">
+                <i class="fa-solid fa-play"></i>
+                <i class="fa-solid fa-pause"></i>
+            </button>
+        </div>
+        
+        <div class="search-group">
+            <button class="small-btn"><i class="fa-solid fa-backward-step"></i></button>
+            <button class="small-btn"><i class="fa-solid fa-forward-step"></i></button>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
