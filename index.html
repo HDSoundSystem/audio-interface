@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Audio Mixer - Wide Edition</title>
+    <title>Pro Audio Mixer - Bitcount Red Active</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.cdnfonts.com/css/bitcount-prop-single" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -31,21 +31,21 @@
     <div class="mixer-section">
         <div class="control-group">
             <label>VOL</label>
-            <input type="range" id="volume-slider" orient="vertical" min="0" max="1" step="0.01" value="0.05">
+            <input type="range" id="volume-slider" class="vertical-slider" min="0" max="1" step="0.01" value="0.05">
             <span class="val-label" id="volume-icon"><i class="fa-solid fa-volume-high"></i></span>
             <button class="btn-rst" id="mute-btn">MUTE</button>
         </div>
         
         <div class="control-group">
             <label>LOW</label>
-            <input type="range" id="bass-slider" orient="vertical" min="-20" max="20" step="1" value="0">
+            <input type="range" id="bass-slider" class="vertical-slider" min="-20" max="20" step="1" value="0">
             <span id="bass-val" class="val-label">0dB</span>
             <button class="btn-rst" data-target="bass-slider">RST</button>
         </div>
 
         <div class="control-group">
             <label>HI</label>
-            <input type="range" id="treble-slider" orient="vertical" min="-20" max="20" step="1" value="0">
+            <input type="range" id="treble-slider" class="vertical-slider" min="-20" max="20" step="1" value="0">
             <span id="treble-val" class="val-label">0dB</span>
             <button class="btn-rst" data-target="treble-slider">RST</button>
         </div>
@@ -58,7 +58,7 @@
 
         <div class="control-group">
             <label>PITCH</label>
-            <input type="range" id="pitch-slider" orient="vertical" min="0.5" max="1.5" step="0.01" value="1">
+            <input type="range" id="pitch-slider" class="vertical-slider" min="0.5" max="1.5" step="0.01" value="1">
             <span id="pitch-val" class="val-label">1.0x</span>
             <button class="btn-rst" data-target="pitch-slider">RST</button>
         </div>
