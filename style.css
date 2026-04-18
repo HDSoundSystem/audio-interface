@@ -19,7 +19,7 @@ body {
     background: var(--panel-color);
     width: 900px; 
     height: calc(100vh - 20px); 
-    padding: 15px 30px;
+    padding: 15px 25px;
     border-radius: 20px; 
     border: 1px solid #2a2d32;
     box-sizing: border-box;
@@ -27,83 +27,63 @@ body {
 }
 
 .display-section {
-    background: #000; padding: 15px; border-radius: 15px;
-    border: 1px solid #333;
+    background: #000; padding: 15px; border-radius: 15px; border: 1px solid #333;
     display: flex; flex-direction: column; align-items: center;
     flex-grow: 1; justify-content: center; min-height: 0;
 }
 
 .album-art-container {
-    flex-grow: 1; width: auto; aspect-ratio: 1/1;
-    max-height: 250px; background: #111;
-    margin-bottom: 10px; border-radius: 10px;
-    display: flex; justify-content: center; align-items: center;
-    border: 1px dashed #444; position: relative; overflow: hidden;
+    flex-grow: 1; aspect-ratio: 1/1; max-height: 180px; background: #111;
+    margin-bottom: 10px; border-radius: 10px; display: flex; justify-content: center;
+    align-items: center; border: 1px dashed #444; overflow: hidden;
 }
 
 #album-art { height: 100%; width: 100%; object-fit: cover; }
 
-.track-info { width: 100%; margin-bottom: 10px; text-align: center; }
-
-/* Nouveau style pour le Meta Display en Nunito */
-#display-meta {
-    font-family: 'Nunito', sans-serif;
-    font-weight: 900;
-    font-size: 1.2rem; 
-    color: var(--accent); 
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
+#display-meta { font-weight: 900; font-size: 1rem; color: var(--accent); text-transform: uppercase; text-align: center; margin-bottom: 8px; }
 
 .time-rail { display: flex; align-items: center; gap: 15px; width: 100%; }
-.time-box { font-weight: 700; width: 70px; text-align: center; }
+.time-box { font-weight: 700; width: 60px; text-align: center; font-size: 0.75rem; }
 #seek-slider { flex-grow: 1; accent-color: var(--accent); cursor: pointer; }
 
-/* MIXER SECTION */
+.playlist-container {
+    background: rgba(0,0,0,0.2); border-radius: 10px; margin: 10px 0;
+    max-height: 100px; overflow-y: auto; border: 1px solid #2a2d32;
+}
+#playlist-ul { list-style: none; padding: 0; margin: 0; }
+#playlist-ul li {
+    padding: 8px 15px; border-bottom: 1px solid #222; cursor: pointer;
+    font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#playlist-ul li.active-track { color: var(--accent); background: rgba(0,212,255,0.1); font-weight: bold; }
+
 .mixer-section {
-    display: flex; justify-content: space-around;
-    padding: 15px; background: var(--glass);
-    border-radius: 15px; margin: 15px 0;
+    display: flex; justify-content: space-around; padding: 10px;
+    background: var(--glass); border-radius: 15px; margin-bottom: 10px;
 }
+.control-group { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.control-group label { font-size: 0.65rem; font-weight: 900; color: #666; }
+.vertical-slider { appearance: slider-vertical; width: 10px; height: 70px; accent-color: var(--accent); }
 
-.control-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.control-group label { font-weight: 900; font-size: 0.75rem; letter-spacing: 1px; color: #888; }
+.btn-rst, .btn-toggle { font-family: 'Nunito'; font-weight: 900; font-size: 0.6rem; cursor: pointer; border-radius: 4px; border: none;}
+.btn-rst { background: #2a2d32; color: #666; width: 45px; padding: 3px 0; }
+.btn-toggle { background: #222; color: #777; width: 65px; padding: 6px 0; border: 1px solid #444; }
 
-.vertical-slider {
-    appearance: slider-vertical;
-    width: 10px; height: 100px;
-    accent-color: var(--accent);
-    cursor: pointer;
-}
-
-.val-label { font-size: 0.85rem; font-weight: 700; color: var(--accent); height: 1.2em; }
-
-.btn-rst {
-    font-family: 'Nunito', sans-serif;
-    background: #2a2d32; border: none; color: #666; font-size: 0.65rem;
-    padding: 4px 0; border-radius: 3px; width: 60px; cursor: pointer; font-weight: 900;
-}
-
-/* ÉTATS ACTIFS EN ROUGE */
-#mute-btn.active-danger { background: var(--danger) !important; color: #fff !important; }
-#bypass-btn.active-danger { background: var(--danger) !important; color: #fff !important; border-color: var(--danger) !important; }
+/* ÉTATS ROUGES / ACTIFS */
+#mute-btn.active-danger, #bypass-btn.active-danger { background: var(--danger) !important; color: #fff !important; }
 .active-danger-text { color: var(--danger) !important; font-weight: 900; }
+.active-blue { color: var(--accent) !important; }
+#loudness-btn.active { background: var(--accent); color: #000; }
 
-.btn-toggle {
-    font-family: 'Nunito', sans-serif;
-    background: #222; border: 1px solid #444; color: #777;
-    width: 75px; padding: 8px 0; border-radius: 5px; font-size: 0.65rem; font-weight: 900;
-}
-#loudness-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+.controls-main { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; margin-bottom: 5px; }
+.control-subgroup { display: flex; align-items: center; gap: 15px; }
+.main-nav { gap: 10px; }
+.btn-play { width: 55px; height: 55px; background: var(--accent); border-radius: 50%; border: none; cursor: pointer; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; }
+.secondary { background: none; border: none; color: #555; font-size: 1.1rem; cursor: pointer; }
 
-/* CONTROLES TRANSPORT */
-.controls-main { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 10px; }
-.btn-play {
-    width: 60px; height: 60px; background: var(--accent); color: #000;
-    border-radius: 50%; font-size: 1.5rem; border: none; cursor: pointer;
-    display: flex; justify-content: center; align-items: center;
-}
-.secondary { font-size: 1.1rem !important; color: #555 !important; background: none; border: none; cursor: pointer; }
-
-.extra-functions { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #2a2d32; }
+.extra-functions { display: flex; justify-content: space-between; border-top: 1px solid #2a2d32; padding-top: 8px; }
 .btn-tool { background: none; border: none; color: #444; font-size: 1.1rem; cursor: pointer; }
+
+/* Scrollbar Style */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
