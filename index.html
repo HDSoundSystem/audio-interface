@@ -22,7 +22,7 @@
         </div>
         
         <div class="time-rail">
-            <span id="current-time">00:00</span>
+            <span id="current-time" style="cursor: pointer;">00:00</span>
             <input type="range" id="seek-slider" value="0" min="0" max="100">
             <span id="duration">00:00</span>
         </div>
@@ -42,6 +42,11 @@
         </div>
 
         <div class="control-group">
+            <label>LOUD</label>
+            <button id="loudness-btn" class="btn-toggle">OFF</button>
+        </div>
+
+        <div class="control-group">
             <label>HI</label>
             <input type="range" id="treble-slider" orient="vertical" min="-20" max="20" step="1" value="0">
             <span id="treble-val" class="val-label">0dB</span>
@@ -55,6 +60,7 @@
     </div>
 
     <footer class="controls-main">
+        <button id="time-toggle-btn" class="btn-tool secondary" title="Temps restant"><i class="fa-regular fa-clock"></i></button>
         <button class="btn-tool secondary" title="Shuffle"><i class="fa-solid fa-shuffle"></i></button>
         <button id="rewind-btn" class="btn-tool secondary" title="Arrière Rapide"><i class="fa-solid fa-backward-fast"></i></button>
         <button class="btn-tool secondary" title="Précédent"><i class="fa-solid fa-backward-step"></i></button>
