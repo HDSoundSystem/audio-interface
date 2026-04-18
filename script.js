@@ -197,3 +197,42 @@ document.querySelectorAll('.btn-rst[data-target]').forEach(btn => {
         t.dispatchEvent(new Event('input'));
     };
 });
+
+// --- Gestion de la vue plein écran ---
+const modal = document.getElementById('modal-overlay');
+const artContainer = document.querySelector('.album-art-container');
+
+// Ouvrir la modale
+artContainer.onclick = () => {
+    const currentImg = document.getElementById('album-art').src;
+    const metaText = document.getElementById('display-meta').innerText;
+    
+    // Si aucune musique n'est chargée, on n'ouvre pas
+    if (!currentImg || playlist.length === 0) return;
+
+    // On peuple la modale
+    document.getElementById('modal-img').src = currentImg;
+    
+    // On sépare le texte du meta (Titre - Album - Artiste)
+    const parts = metaText.split(' - ');
+    document.getElementById('modal-title').innerText = parts[0] || "Titre inconnu";
+    document.getElementById('modal-album').innerText = parts[1] || "Album inconnu";
+    document.getElementById('modal-artist').innerText = parts[2] || "Artiste inconnu";
+
+    modal.style.display = 'flex';
+};
+
+// Fermer la modale
+document.getElementById('close-modal').onclick = () => {
+    modal.style.display = 'none';
+};
+
+// Fermer aussi en cliquant n'importe où sur le fond noir
+modal.onclick = (e) => {
+    if (e.target === modal) modal.style.display = 'none';
+};
+
+// Fermer avec la touche Echap
+document.addEventListener('keydown', (e) => {
+    if (e.key === "Escape") modal.style.display = 'none';
+});
