@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Audio Player & Mixer</title>
+    <title>Pro Audio Mixer & Player</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
@@ -55,18 +55,23 @@
     </div>
 
     <footer class="controls-main">
-        <button class="btn-tool secondary"><i class="fa-solid fa-shuffle"></i></button>
-        <button class="btn-tool secondary"><i class="fa-solid fa-backward-step"></i></button>
+        <button class="btn-tool secondary" title="Shuffle"><i class="fa-solid fa-shuffle"></i></button>
+        <button id="rewind-btn" class="btn-tool secondary" title="Arrière Rapide"><i class="fa-solid fa-backward-fast"></i></button>
+        <button class="btn-tool secondary" title="Précédent"><i class="fa-solid fa-backward-step"></i></button>
+        
         <button id="play-pause" class="btn-play">
             <i class="fa-solid fa-play" id="play-icon"></i>
         </button>
-        <button class="btn-tool secondary"><i class="fa-solid fa-forward-step"></i></button>
-        <button class="btn-tool secondary"><i class="fa-solid fa-repeat"></i></button>
+        
+        <button class="btn-tool secondary" title="Suivant"><i class="fa-solid fa-forward-step"></i></button>
+        <button id="forward-btn" class="btn-tool secondary" title="Avance Rapide"><i class="fa-solid fa-forward-fast"></i></button>
+        <button class="btn-tool secondary" title="Repeat"><i class="fa-solid fa-repeat"></i></button>
+        <button id="ab-loop-btn" class="btn-tool secondary" title="Boucle A-B">A-B</button>
     </footer>
 
     <nav class="extra-functions">
         <input type="file" id="file-upload" style="display:none" accept="audio/*">
-        <button id="eject-btn" class="btn-tool" title="Eject/Load">
+        <button id="eject-btn" class="btn-tool" title="Ajouter des fichiers">
             <i class="fa-solid fa-eject"></i>
         </button>
         <button class="btn-tool"><i class="fa-solid fa-list-ul"></i></button>
