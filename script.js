@@ -42,7 +42,6 @@ function formatTime(s) {
     return (s < 0 ? "-" : "") + (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
 }
 
-// Fichier & Meta
 document.getElementById('file-upload').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -73,7 +72,6 @@ document.getElementById('file-upload').addEventListener('change', (e) => {
 
 function resetCover() { document.getElementById('album-art').style.display = "none"; document.getElementById('no-cover-text').style.display = "block"; }
 
-// Navigation
 audio.addEventListener('timeupdate', () => {
     if (loopA !== null && loopB !== null && audio.currentTime >= loopB) audio.currentTime = loopA;
     if (audio.duration) seekSlider.value = (audio.currentTime / audio.duration) * 100;
@@ -91,7 +89,6 @@ document.getElementById('play-pause').addEventListener('click', function() {
     else { audio.pause(); playIcon.className = "fa-solid fa-play"; }
 });
 
-// Mixer
 document.getElementById('mute-btn').addEventListener('click', function() {
     this.classList.toggle('active-danger');
     if (this.classList.contains('active-danger')) { prevVol = audio.volume; audio.volume = 0; }
