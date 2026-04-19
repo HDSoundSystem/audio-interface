@@ -25,9 +25,50 @@ body {
     overflow: hidden;
 }
 
+/* =============================================
+   VU METRES — COLONNES LATÉRALES
+   ============================================= */
+.vu-col {
+    width: 50px;
+    flex-shrink: 0;
+    background: var(--sidebar-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-left: 1px solid #2a2d32;
+    border-right: 1px solid #2a2d32;
+    padding: 20px 0;
+}
+
+.vu-col-label {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #8a8f97;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+}
+
+/* Le .vu-meter dans les colonnes latérales : 50% de la hauteur de l'app */
+.vu-col .vu-meter {
+    width: 22px;
+    height: 50%;
+    min-height: unset;
+    padding: 6px 4px;
+    flex-shrink: 0;
+}
+
+/* Les LEDs s'adaptent à la hauteur disponible */
+.vu-col .vu-led {
+    width: 14px;
+    min-height: 3px;
+}
+
+
 .main-app-wrapper {
     display: flex;
-    width: 1520px;
+    width: 1620px;
     height: calc(100vh - 40px);
     background: var(--panel-color);
     border-radius: 20px;
@@ -339,10 +380,9 @@ body {
 .time-readout-row {
     display: flex;
     justify-content: space-between;
-    align-items: stretch;
+    align-items: center;
     width: 100%;
     margin-top: 10px;
-    flex: 1;
 }
 
 .time-meter-stack {
@@ -1038,4 +1078,110 @@ google-cast-button {
 
 #pitch-slider::-moz-range-thumb {
     background: var(--cursor-blue) center/100% 100% no-repeat;
+}
+
+/* EJECT dans le header playlist */
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-header-eject {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 2px 4px;
+    line-height: 1;
+}
+.btn-header-eject:hover { color: var(--accent); }
+
+/* MODALE POWER */
+.power-modal-box {
+    background: #1a1c20;
+    border: 1px solid #2a2d32;
+    border-radius: 16px;
+    padding: 36px 40px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    min-width: 300px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+}
+
+.power-modal-icon {
+    font-size: 2rem;
+    color: var(--danger);
+    margin-bottom: 4px;
+}
+
+.power-modal-text {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: var(--text-main);
+    margin: 0;
+    letter-spacing: 0.5px;
+}
+
+.power-modal-sub {
+    font-size: 0.72rem;
+    color: #555;
+    margin: 0;
+    font-weight: 700;
+}
+
+.power-modal-btns {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.power-btn-cancel {
+    flex: 1;
+    background: #222;
+    color: #777;
+    border: 1px solid #333;
+    padding: 10px;
+    font-weight: 900;
+    font-size: 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    letter-spacing: 1px;
+}
+.power-btn-cancel:hover { background: #2a2d32; color: #aaa; }
+
+.power-btn-confirm {
+    flex: 1;
+    background: rgba(255,68,68,0.12);
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    padding: 10px;
+    font-weight: 900;
+    font-size: 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+    letter-spacing: 1px;
+}
+.power-btn-confirm:hover { background: var(--danger); color: #fff; }
+
+/* Power modal — z-index élevé pour passer au-dessus de tout */
+#power-modal {
+    z-index: 9999;
+    pointer-events: all;
+}
+#power-modal .power-modal-box {
+    pointer-events: all;
+}
+#power-modal .power-btn-cancel,
+#power-modal .power-btn-confirm {
+    pointer-events: all;
+    position: relative;
+    z-index: 10000;
 }

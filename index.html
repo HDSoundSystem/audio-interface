@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,10 +27,20 @@
     <body>
 
         <div class="main-app-wrapper">
+            <!-- VU METRE GAUCHE -->
+            <div class="vu-col vu-col-left">
+                <span class="vu-col-label">L</span>
+                <div id="vu-meter-left" class="vu-meter"></div>
+            </div>
             <aside class="playlist-sidebar" id="playlist-sidebar">
                 <div class="sidebar-header">
                     <span><i class="fa-solid fa-list-ul"></i> PLAYLIST</span>
-                    <span class="track-count" id="track-count">0 TRACK</span>
+                    <div class="header-right-group">
+                        <span class="track-count" id="track-count">0 TRACK</span>
+                        <button id="eject-btn" class="btn-header-eject" title="Load files (O)">
+                            <i class="fa-solid fa-eject"></i>
+                        </button>
+                    </div>
                 </div>
                 <div id="drop-zone">
                     <i class="fa-solid fa-music"></i>
@@ -62,21 +72,9 @@
                         </div>
                     </div>
                     <div class="time-readout-row">
-                        <div class="time-meter-stack">
-                            <span id="current-time" class="time-box">00:00</span>
-                            <div class="vu-meter-wrap">
-                                <span class="vu-meter-label">L</span>
-                                <div id="vu-meter-left" class="vu-meter"></div>
-                            </div>
-                        </div>
+                        <span id="current-time" class="time-box">00:00</span>
                         <span id="pause-pill">PAUSE</span>
-                        <div class="time-meter-stack">
-                            <span id="duration" class="time-box">00:00</span>
-                            <div class="vu-meter-wrap">
-                                <span class="vu-meter-label">R</span>
-                                <div id="vu-meter-right" class="vu-meter"></div>
-                            </div>
-                        </div>
+                        <span id="duration" class="time-box time-box-right">00:00</span>
                     </div>
                 </header>
 
@@ -124,9 +122,8 @@
                 <nav class="extra-functions">
                     <input type="file" id="file-upload" style="display:none"
                         accept="audio/*" multiple>
-                    <button id="eject-btn" class="btn-bottom-tool"
-                        title="Load files (O)"><i
-                            class="fa-solid fa-eject"></i></button>
+                    <button id="power-btn" class="btn-bottom-tool"
+                        title="Refresh"><i class="fa-solid fa-power-off"></i></button>
                     <!-- Chromecast -->
                     <button id="cast-btn" class="btn-bottom-tool"
                         title="Chromecast" style="display:none">
@@ -277,6 +274,11 @@
                     </div>
                 </div>
             </aside>
+            <!-- VU METRE DROIT -->
+            <div class="vu-col vu-col-right">
+                <span class="vu-col-label">R</span>
+                <div id="vu-meter-right" class="vu-meter"></div>
+            </div>
         </div>
 
         <!-- Modal Cover -->
@@ -346,5 +348,18 @@
         <script
             src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
         <script src="script.js"></script>
-    </body>
+    <!-- Modale confirmation rafraîchissement -->
+<div id="power-modal" class="modal-overlay" style="display:none;">
+    <div class="power-modal-box">
+        <i class="fa-solid fa-power-off power-modal-icon"></i>
+        <p class="power-modal-text">Restart the application?</p>
+        <p class="power-modal-sub">Current playback will be stopped.</p>
+        <div class="power-modal-btns">
+            <button id="power-cancel-btn" class="power-btn-cancel">CANCEL</button>
+            <button id="power-confirm-btn" class="power-btn-confirm">RESTART</button>
+        </div>
+    </div>
+</div>
+
+</body>
 </html>

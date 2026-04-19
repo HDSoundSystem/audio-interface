@@ -29,8 +29,8 @@ let vuPeakRight = 0;
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./service-worker.js')
-            .then(reg => console.log('[SW] Enregistré :', reg.scope))
-            .catch(err => console.warn('[SW] Échec :', err));
+            .then(reg => console.log('[SW] Registered:', reg.scope))
+            .catch(err => console.warn('[SW] Error:', err));
     });
 }
 
@@ -94,7 +94,9 @@ function getAnalyserLevel(analyser) {
         sum += sample * sample;
     }
     const rms = Math.sqrt(sum / data.length);
-    return Math.min(1, rms * 3.2);
+    const db = 20 * Math.log10(rms + 1e-6);       // RMS → dB (-120 à 0)
+    const normalized = Math.max(0, (db + 60) / 60); // mappe [-60, 0] dB → [0, 1]
+    return Math.pow(normalized, 0.55);               // courbe log douce pour les bas volumes
 }
 
 function animateVuMeters() {
@@ -764,6 +766,23 @@ document.getElementById('file-upload').onchange = (e) => {
 
 document.getElementById('eject-btn').onclick = () => document.getElementById('file-upload').click();
 
+// BOUTON POWER — modale de confirmation de rafraîchissement
+document.getElementById('power-btn').onclick = () => {
+    document.getElementById('power-modal').style.display = 'flex';
+};
+document.getElementById('power-cancel-btn').onclick = () => {
+    document.getElementById('power-modal').style.display = 'none';
+};
+document.getElementById('power-confirm-btn').onclick = () => {
+    window.location.reload();
+};
+// Fermer en cliquant sur le fond
+document.getElementById('power-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('power-modal')) {
+        document.getElementById('power-modal').style.display = 'none';
+    }
+});
+
 function addFiles(files) {
     const audioFiles = files.filter(f =>
         f.type.startsWith('audio/') || /\.(mp3|flac|ogg|wav|aac|m4a|opus|wma)$/i.test(f.name)
@@ -841,8 +860,6 @@ function renderPlaylist() {
             ul.querySelectorAll('li').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
         });
         li.addEventListener('dragover', (ev) => {
-            // Seulement si c'est un réordonnement interne
-            if (!ev.dataTransfer.types.includes('text/plain')) return;
             ev.preventDefault();
             ev.dataTransfer.dropEffect = 'move';
             const mid = li.getBoundingClientRect().top + li.getBoundingClientRect().height / 2;
@@ -917,16 +934,35 @@ function deleteTrack(index) {
 // ============================================================
 // DRAG & DROP FICHIERS DEPUIS L'OS
 // ============================================================
+// ============================================================
+// DRAG & DROP FILES FROM OS
+// ============================================================
 const sidebar = document.getElementById('playlist-sidebar');
 let osDropCounter = 0;
+let isDraggingExternal = false;
+
+// Detect when OS files enter the browser window
+document.addEventListener('dragenter', (e) => {
+    if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
+        isDraggingExternal = true;
+    }
+});
+document.addEventListener('dragleave', (e) => {
+    if (e.relatedTarget === null) {
+        isDraggingExternal = false;
+        osDropCounter = 0;
+        sidebar.classList.remove('drag-active');
+    }
+});
 
 sidebar.addEventListener('dragenter', (e) => {
-    if (!e.dataTransfer.types.includes('Files')) return;
+    if (!isDraggingExternal) return;
     e.preventDefault();
     osDropCounter++;
     sidebar.classList.add('drag-active');
 });
 sidebar.addEventListener('dragleave', () => {
+    if (!isDraggingExternal) return;
     osDropCounter--;
     if (osDropCounter <= 0) {
         osDropCounter = 0;
@@ -934,25 +970,28 @@ sidebar.addEventListener('dragleave', () => {
     }
 });
 sidebar.addEventListener('dragover', (e) => {
-    if (!e.dataTransfer.types.includes('Files')) return;
+    if (!isDraggingExternal) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'copy';
 });
 sidebar.addEventListener('drop', (e) => {
+    if (!isDraggingExternal) return;
     e.preventDefault();
     osDropCounter = 0;
+    isDraggingExternal = false;
     sidebar.classList.remove('drag-active');
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) addFiles(files);
 });
 
-// Empêcher le navigateur d'ouvrir les fichiers droppés hors de la sidebar
+// Prevent browser from opening dropped files outside sidebar
 document.addEventListener('dragover', (e) => {
-    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+    if (isDraggingExternal) e.preventDefault();
 });
 document.addEventListener('drop', (e) => {
-    if (!e.dataTransfer.types.includes('Files')) return;
+    if (!isDraggingExternal) return;
     e.preventDefault();
+    isDraggingExternal = false;
     if (!sidebar.contains(e.target)) {
         const files = Array.from(e.dataTransfer.files);
         if (files.length > 0) addFiles(files);
