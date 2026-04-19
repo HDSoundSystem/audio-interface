@@ -12,7 +12,7 @@ const metaDisplay = document.getElementById('display-meta');
 const seekSlider = document.getElementById('seek-slider');
 
 // ============================================================
-// PWA — Enregistrement du Service Worker
+// PWA — Service Worker
 // ============================================================
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
@@ -23,7 +23,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // ============================================================
-// TOAST HELPER
+// TOAST
 // ============================================================
 let toastTimer;
 function showToast(msg) {
@@ -35,7 +35,7 @@ function showToast(msg) {
 }
 
 // ============================================================
-// INIT WEB AUDIO
+// WEB AUDIO
 // ============================================================
 function initAudio() {
     if (audioContext) return;
@@ -45,12 +45,13 @@ function initAudio() {
     bassFilter.type = "lowshelf"; bassFilter.frequency.value = 200;
     trebleFilter = audioContext.createBiquadFilter();
     trebleFilter.type = "highshelf"; trebleFilter.frequency.value = 3000;
-    source.connect(bassFilter); bassFilter.connect(trebleFilter);
+    source.connect(bassFilter);
+    bassFilter.connect(trebleFilter);
     trebleFilter.connect(audioContext.destination);
 }
 
 // ============================================================
-// GESTION DU TEMPS & SLIDER
+// TEMPS & SLIDER
 // ============================================================
 document.getElementById('time-toggle-btn').onclick = function() {
     showRemaining = !showRemaining;
@@ -110,9 +111,7 @@ function loadTrack(index) {
         const kbps = Math.round((file.size * 8) / audio.duration / 1000);
         document.getElementById('file-bitrate').innerText = kbps + " KBPS";
     };
-    document.querySelectorAll('#playlist-ul li').forEach((li, i) => {
-        li.className = (i === index) ? 'active-track' : '';
-    });
+    renderPlaylist();
     if (window.jsmediatags) {
         window.jsmediatags.read(file, {
             onSuccess: (tag) => {
@@ -121,14 +120,14 @@ function loadTrack(index) {
                 if (picture) {
                     let b64 = "";
                     for (let i = 0; i < picture.data.length; i++) b64 += String.fromCharCode(picture.data[i]);
-                    document.getElementById('album-art').src = `data:${picture.format};base64,${window.btoa(b64)}`;
+                    const src = `data:${picture.format};base64,${window.btoa(b64)}`;
+                    document.getElementById('album-art').src = src;
                     document.getElementById('album-art').style.display = "block";
                     document.getElementById('no-cover-text').style.display = "none";
-                    // Modal infos
                     document.getElementById('modal-title').innerText = title || "";
                     document.getElementById('modal-artist').innerText = artist || "";
                     document.getElementById('modal-album').innerText = album || "";
-                    document.getElementById('modal-img').src = `data:${picture.format};base64,${window.btoa(b64)}`;
+                    document.getElementById('modal-img').src = src;
                 } else {
                     resetCoverUI();
                 }
@@ -138,9 +137,13 @@ function loadTrack(index) {
     }
     audio.play();
     playIcon.className = "fa-solid fa-pause";
-
-    // Si Chromecast connecté, charger la piste dessus
     castCurrentTrack();
+}
+
+function resetCoverUI() {
+    document.getElementById('album-art').style.display = "none";
+    document.getElementById('no-cover-text').style.display = "block";
+    document.getElementById('modal-img').src = "";
 }
 
 // ============================================================
@@ -186,16 +189,12 @@ function updateFilters() {
     trebleFilter.gain.value = t;
 }
 
-document.getElementById('loudness-btn').onclick = function() {
-    this.classList.toggle('active-blue'); updateFilters();
-};
+document.getElementById('loudness-btn').onclick = function() { this.classList.toggle('active-blue'); updateFilters(); };
 document.getElementById('mute-btn').onclick = function() {
     audio.muted = !audio.muted;
     this.classList.toggle('active-danger', audio.muted);
 };
-document.getElementById('bypass-btn').onclick = function() {
-    this.classList.toggle('active-danger'); updateFilters();
-};
+document.getElementById('bypass-btn').onclick = function() { this.classList.toggle('active-danger'); updateFilters(); };
 
 document.getElementById('volume-slider').oninput = (e) => {
     audio.volume = e.target.value;
@@ -213,6 +212,14 @@ document.getElementById('pitch-slider').oninput = (e) => {
     audio.playbackRate = e.target.value;
     document.getElementById('val-pitch').innerText = Math.round(e.target.value * 100) + "%";
 };
+
+document.querySelectorAll('.btn-rst[data-target]').forEach(btn => {
+    btn.onclick = () => {
+        const t = document.getElementById(btn.dataset.target);
+        t.value = btn.dataset.target === 'pitch-slider' ? 1 : 0;
+        t.dispatchEvent(new Event('input'));
+    };
+});
 
 // ============================================================
 // NAVIGATION
@@ -232,8 +239,7 @@ document.getElementById('forward-btn').onclick = () => { audio.currentTime += 10
 document.getElementById('repeat-btn').onclick = function() {
     repeatMode = (repeatMode + 1) % 3;
     this.classList.toggle('active-blue', repeatMode > 0);
-    const labels = ["Répétition OFF", "Répétition playlist", "Répétition piste"];
-    showToast(labels[repeatMode]);
+    showToast(["Répétition OFF", "Répétition playlist", "Répétition piste"][repeatMode]);
 };
 
 document.getElementById('shuffle-btn').onclick = function() {
@@ -243,7 +249,7 @@ document.getElementById('shuffle-btn').onclick = function() {
 };
 
 // ============================================================
-// UI & MODALE COVER
+// MODALES
 // ============================================================
 document.getElementById('art-trigger').onclick = () => {
     if (!document.getElementById('album-art').src) return;
@@ -252,10 +258,6 @@ document.getElementById('art-trigger').onclick = () => {
 document.getElementById('close-modal').onclick = () => {
     document.getElementById('modal-overlay').style.display = 'none';
 };
-
-// ============================================================
-// MODALE RACCOURCIS CLAVIER
-// ============================================================
 document.getElementById('kbd-help-btn').onclick = () => {
     document.getElementById('kbd-modal').style.display = 'flex';
 };
@@ -267,7 +269,6 @@ document.getElementById('close-kbd-modal').onclick = () => {
 // RACCOURCIS CLAVIER
 // ============================================================
 document.addEventListener('keydown', (e) => {
-    // Ne pas intercepter si focus sur un input/slider
     const tag = document.activeElement.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
 
@@ -301,70 +302,192 @@ document.addEventListener('keydown', (e) => {
             document.getElementById('val-volume').innerText = Math.round(audio.volume * 100) + "%";
             showToast("🔉 Vol " + Math.round(audio.volume * 100) + "%");
             break;
-        case 'KeyN':
-            nextTrack();
-            showToast("⏭ Piste suivante");
-            break;
-        case 'KeyP':
-            loadTrack(Math.max(0, currentTrackIndex - 1));
-            showToast("⏮ Piste précédente");
-            break;
-        case 'KeyM':
-            document.getElementById('mute-btn').click();
-            showToast(audio.muted ? "🔇 Mute ON" : "🔊 Mute OFF");
-            break;
-        case 'KeyR':
-            document.getElementById('repeat-btn').click();
-            break;
-        case 'KeyS':
-            document.getElementById('shuffle-btn').click();
-            break;
-        case 'KeyT':
-            document.getElementById('time-toggle-btn').click();
-            showToast(showRemaining ? "Temps restant" : "Temps écoulé");
-            break;
-        case 'KeyO':
-            document.getElementById('file-upload').click();
-            break;
-        case 'Slash':
-        case 'IntlRo':
-            if (e.shiftKey) {
-                document.getElementById('kbd-modal').style.display = 'flex';
-            }
-            break;
+        case 'KeyN': nextTrack(); showToast("⏭ Piste suivante"); break;
+        case 'KeyP': loadTrack(Math.max(0, currentTrackIndex - 1)); showToast("⏮ Piste précédente"); break;
+        case 'KeyM': document.getElementById('mute-btn').click(); showToast(audio.muted ? "🔇 Mute ON" : "🔊 Mute OFF"); break;
+        case 'KeyR': document.getElementById('repeat-btn').click(); break;
+        case 'KeyS': document.getElementById('shuffle-btn').click(); break;
+        case 'KeyT': document.getElementById('time-toggle-btn').click(); break;
+        case 'KeyO': document.getElementById('file-upload').click(); break;
+        case 'Slash': if (e.shiftKey) document.getElementById('kbd-modal').style.display = 'flex'; break;
     }
 });
 
 // ============================================================
-// FICHIERS
+// FICHIERS & PLAYLIST
 // ============================================================
 document.getElementById('file-upload').onchange = (e) => {
-    playlist = Array.from(e.target.files);
-    const ul = document.getElementById('playlist-ul');
-    ul.innerHTML = "";
-    playlist.forEach((f, i) => {
-        const li = document.createElement('li');
-        li.innerText = f.name.split('.')[0];
-        li.onclick = () => loadTrack(i);
-        ul.appendChild(li);
-    });
-    if (playlist.length > 0) loadTrack(0);
+    addFiles(Array.from(e.target.files));
+    e.target.value = "";
 };
 
 document.getElementById('eject-btn').onclick = () => document.getElementById('file-upload').click();
 
-function resetCoverUI() {
-    document.getElementById('album-art').style.display = "none";
-    document.getElementById('no-cover-text').style.display = "block";
-    document.getElementById('modal-img').src = "";
+function addFiles(files) {
+    const audioFiles = files.filter(f =>
+        f.type.startsWith('audio/') || /\.(mp3|flac|ogg|wav|aac|m4a|opus|wma)$/i.test(f.name)
+    );
+    if (audioFiles.length === 0) return;
+    const wasEmpty = playlist.length === 0;
+    playlist.push(...audioFiles);
+    renderPlaylist();
+    if (wasEmpty) loadTrack(0);
+    showToast(`+${audioFiles.length} piste${audioFiles.length > 1 ? 's' : ''} ajoutée${audioFiles.length > 1 ? 's' : ''}`);
 }
 
-document.querySelectorAll('.btn-rst[data-target]').forEach(btn => {
-    btn.onclick = () => {
-        const t = document.getElementById(btn.dataset.target);
-        t.value = btn.dataset.target === 'pitch-slider' ? 1 : 0;
-        t.dispatchEvent(new Event('input'));
-    };
+function renderPlaylist() {
+    const ul = document.getElementById('playlist-ul');
+    ul.innerHTML = "";
+
+    if (playlist.length === 0) {
+        ul.innerHTML = '<li style="padding:12px 20px;color:#555;font-size:0.75rem;pointer-events:none;">Aucun fichier chargé</li>';
+        document.getElementById('track-count').textContent = '0 PISTE';
+        return;
+    }
+
+    document.getElementById('track-count').textContent = playlist.length + ' PISTE' + (playlist.length > 1 ? 'S' : '');
+
+    playlist.forEach((f, i) => {
+        const li = document.createElement('li');
+        li.dataset.index = i;
+        li.draggable = true;
+        if (i === currentTrackIndex) li.classList.add('active-track');
+
+        li.innerHTML = `
+            <span class="drag-handle" title="Glisser pour réorganiser"><i class="fa-solid fa-grip-vertical"></i></span>
+            <span class="track-name" title="${f.name}">${f.name.replace(/\.[^.]+$/, '')}</span>
+            <button class="btn-delete-track" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+        `;
+
+        li.querySelector('.track-name').onclick = () => loadTrack(i);
+
+        li.querySelector('.btn-delete-track').onclick = (ev) => {
+            ev.stopPropagation();
+            deleteTrack(i);
+        };
+
+        // Réordonnement par drag
+        li.addEventListener('dragstart', (ev) => {
+            ev.dataTransfer.effectAllowed = 'move';
+            ev.dataTransfer.setData('text/plain', String(i));
+            setTimeout(() => li.classList.add('dragging'), 0);
+        });
+        li.addEventListener('dragend', () => {
+            li.classList.remove('dragging');
+            ul.querySelectorAll('li').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
+        });
+        li.addEventListener('dragover', (ev) => {
+            // Seulement si c'est un réordonnement interne
+            if (!ev.dataTransfer.types.includes('text/plain')) return;
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = 'move';
+            const mid = li.getBoundingClientRect().top + li.getBoundingClientRect().height / 2;
+            ul.querySelectorAll('li').forEach(el => el.classList.remove('drag-over-top', 'drag-over-bottom'));
+            li.classList.add(ev.clientY < mid ? 'drag-over-top' : 'drag-over-bottom');
+        });
+        li.addEventListener('dragleave', () => {
+            li.classList.remove('drag-over-top', 'drag-over-bottom');
+        });
+        li.addEventListener('drop', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            const fromIndex = parseInt(ev.dataTransfer.getData('text/plain'));
+            const toIndex = parseInt(li.dataset.index);
+            if (isNaN(fromIndex) || fromIndex === toIndex) return;
+
+            const mid = li.getBoundingClientRect().top + li.getBoundingClientRect().height / 2;
+            const insertBefore = ev.clientY < mid;
+            const moved = playlist.splice(fromIndex, 1)[0];
+            let insertAt = insertBefore ? toIndex : toIndex + 1;
+            if (fromIndex < toIndex) insertAt--;
+            playlist.splice(insertAt, 0, moved);
+
+            if (currentTrackIndex === fromIndex) {
+                currentTrackIndex = insertAt;
+            } else if (fromIndex < currentTrackIndex && insertAt >= currentTrackIndex) {
+                currentTrackIndex--;
+            } else if (fromIndex > currentTrackIndex && insertAt <= currentTrackIndex) {
+                currentTrackIndex++;
+            }
+
+            renderPlaylist();
+            showToast("↕ Playlist réorganisée");
+        });
+
+        ul.appendChild(li);
+    });
+}
+
+function deleteTrack(index) {
+    const isPlaying = index === currentTrackIndex;
+    playlist.splice(index, 1);
+
+    if (playlist.length === 0) {
+        audio.pause();
+        audio.src = "";
+        playIcon.className = "fa-solid fa-play";
+        metaDisplay.innerText = "CHARGEZ VOS FICHIERS";
+        document.getElementById('file-format').innerText = "---";
+        document.getElementById('file-bitrate').innerText = "--- KBPS";
+        resetCoverUI();
+        currentTrackIndex = 0;
+        renderPlaylist();
+        return;
+    }
+
+    if (isPlaying) {
+        currentTrackIndex = Math.min(index, playlist.length - 1);
+        loadTrack(currentTrackIndex);
+    } else {
+        if (index < currentTrackIndex) currentTrackIndex--;
+        renderPlaylist();
+    }
+    showToast("🗑 Piste supprimée");
+}
+
+// ============================================================
+// DRAG & DROP FICHIERS DEPUIS L'OS
+// ============================================================
+const sidebar = document.getElementById('playlist-sidebar');
+let osDropCounter = 0;
+
+sidebar.addEventListener('dragenter', (e) => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    e.preventDefault();
+    osDropCounter++;
+    sidebar.classList.add('drag-active');
+});
+sidebar.addEventListener('dragleave', () => {
+    osDropCounter--;
+    if (osDropCounter <= 0) {
+        osDropCounter = 0;
+        sidebar.classList.remove('drag-active');
+    }
+});
+sidebar.addEventListener('dragover', (e) => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+});
+sidebar.addEventListener('drop', (e) => {
+    e.preventDefault();
+    osDropCounter = 0;
+    sidebar.classList.remove('drag-active');
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) addFiles(files);
+});
+
+// Empêcher le navigateur d'ouvrir les fichiers droppés hors de la sidebar
+document.addEventListener('dragover', (e) => {
+    if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+});
+document.addEventListener('drop', (e) => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    e.preventDefault();
+    if (!sidebar.contains(e.target)) {
+        const files = Array.from(e.dataTransfer.files);
+        if (files.length > 0) addFiles(files);
+    }
 });
 
 // ============================================================
@@ -374,15 +497,11 @@ let castSession = null;
 
 window['__onGCastApiAvailable'] = function(isAvailable) {
     if (!isAvailable) return;
-
     cast.framework.CastContext.getInstance().setOptions({
         receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
         autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
     });
-
-    // Afficher le bouton Cast
     document.getElementById('cast-btn').style.display = 'flex';
-
     const castContext = cast.framework.CastContext.getInstance();
     castContext.addEventListener(
         cast.framework.CastContextEventType.SESSION_STATE_CHANGED,
@@ -406,8 +525,5 @@ window['__onGCastApiAvailable'] = function(isAvailable) {
 
 function castCurrentTrack() {
     if (!castSession || !playlist[currentTrackIndex]) return;
-
-    // Les fichiers locaux ne peuvent pas être streamés directement via Cast
-    // On affiche un message d'info
     showToast("⚠ Cast: nécessite une URL de stream");
 }
