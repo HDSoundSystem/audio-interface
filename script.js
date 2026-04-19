@@ -71,7 +71,7 @@ function initAudio() {
 // ============================================================
 // TEMPS & SLIDER
 // ============================================================
-document.getElementById('time-toggle-btn').onclick = function() {
+document.getElementById('time-toggle-btn').onclick = function () {
     showRemaining = !showRemaining;
     this.classList.toggle('active-blue', showRemaining);
 };
@@ -92,7 +92,7 @@ function formatTime(s) {
     if (isNaN(s) || s < 0) return "00:00";
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
-    return (m < 10 ? "0"+m : m) + ":" + (sec < 10 ? "0"+sec : sec);
+    return (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
 }
 
 seekSlider.oninput = (e) => {
@@ -167,7 +167,7 @@ function resetCoverUI() {
 // ============================================================
 // BOUCLE A-B
 // ============================================================
-document.getElementById('ab-loop-btn').onclick = function() {
+document.getElementById('ab-loop-btn').onclick = function () {
     const badge = document.getElementById('ab-status-badge');
     if (loopA === null) {
         loopA = audio.currentTime;
@@ -208,12 +208,12 @@ function updateFilters() {
     });
 }
 
-document.getElementById('loudness-btn').onclick = function() { this.classList.toggle('active-blue'); updateFilters(); };
-document.getElementById('mute-btn').onclick = function() {
+document.getElementById('loudness-btn').onclick = function () { this.classList.toggle('active-blue'); updateFilters(); };
+document.getElementById('mute-btn').onclick = function () {
     audio.muted = !audio.muted;
     this.classList.toggle('active-danger', audio.muted);
 };
-document.getElementById('bypass-btn').onclick = function() { this.classList.toggle('active-danger'); updateFilters(); };
+document.getElementById('bypass-btn').onclick = function () { this.classList.toggle('active-danger'); updateFilters(); };
 
 document.getElementById('volume-slider').oninput = (e) => {
     audio.volume = e.target.value;
@@ -276,13 +276,13 @@ document.getElementById('next-btn').onclick = nextTrack;
 document.getElementById('rewind-btn').onclick = () => { audio.currentTime -= 10; showToast("◀◀ -10s"); };
 document.getElementById('forward-btn').onclick = () => { audio.currentTime += 10; showToast("▶▶ +10s"); };
 
-document.getElementById('repeat-btn').onclick = function() {
+document.getElementById('repeat-btn').onclick = function () {
     repeatMode = (repeatMode + 1) % 3;
     this.classList.toggle('active-blue', repeatMode > 0);
     showToast(["Répétition OFF", "Répétition playlist", "Répétition piste"][repeatMode]);
 };
 
-document.getElementById('shuffle-btn').onclick = function() {
+document.getElementById('shuffle-btn').onclick = function () {
     isShuffle = !isShuffle;
     this.classList.toggle('active-blue', isShuffle);
     showToast(isShuffle ? "Aléatoire ON" : "Aléatoire OFF");
@@ -561,7 +561,7 @@ document.addEventListener('drop', (e) => {
 // ============================================================
 let castSession = null;
 
-window['__onGCastApiAvailable'] = function(isAvailable) {
+window['__onGCastApiAvailable'] = function (isAvailable) {
     if (!isAvailable) return;
     cast.framework.CastContext.getInstance().setOptions({
         receiverApplicationId: chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID,
