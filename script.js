@@ -37,6 +37,10 @@ function showToast(msg) {
 // ============================================================
 // WEB AUDIO
 // ============================================================
+// Fréquences ISO standard 10 bandes
+const EQ_FREQS = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+let eqFilters = [];
+
 function initAudio() {
     if (audioContext) return;
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -45,9 +49,23 @@ function initAudio() {
     bassFilter.type = "lowshelf"; bassFilter.frequency.value = 200;
     trebleFilter = audioContext.createBiquadFilter();
     trebleFilter.type = "highshelf"; trebleFilter.frequency.value = 3000;
+
+    // Créer les 10 filtres peaking EQ
+    eqFilters = EQ_FREQS.map(freq => {
+        const f = audioContext.createBiquadFilter();
+        f.type = "peaking";
+        f.frequency.value = freq;
+        f.Q.value = 1.4;
+        f.gain.value = 0;
+        return f;
+    });
+
+    // Chaîne : source → bass → treble → eq[0..9] → destination
     source.connect(bassFilter);
     bassFilter.connect(trebleFilter);
-    trebleFilter.connect(audioContext.destination);
+    let prev = trebleFilter;
+    eqFilters.forEach(f => { prev.connect(f); prev = f; });
+    prev.connect(audioContext.destination);
 }
 
 // ============================================================
@@ -184,6 +202,10 @@ function updateFilters() {
     }
     bassFilter.gain.value = b;
     trebleFilter.gain.value = t;
+    // Bypass EQ 10 bandes
+    eqFilters.forEach((f, i) => {
+        f.gain.value = bypassed ? 0 : parseFloat(document.querySelector(`.eq-slider[data-band="${i}"]`).value);
+    });
 }
 
 document.getElementById('loudness-btn').onclick = function() { this.classList.toggle('active-blue'); updateFilters(); };
@@ -217,6 +239,27 @@ document.querySelectorAll('.btn-rst[data-target]').forEach(btn => {
         t.dispatchEvent(new Event('input'));
     };
 });
+
+// ============================================================
+// EQ 10 BANDES
+// ============================================================
+document.querySelectorAll('.eq-slider').forEach(slider => {
+    slider.oninput = () => {
+        const band = parseInt(slider.dataset.band);
+        const val = parseFloat(slider.value);
+        document.getElementById(`eq-val-${band}`).textContent = (val > 0 ? '+' : '') + val;
+        if (eqFilters[band]) eqFilters[band].gain.value = val;
+    };
+});
+
+document.getElementById('eq-reset-btn').onclick = () => {
+    document.querySelectorAll('.eq-slider').forEach((slider, i) => {
+        slider.value = 0;
+        document.getElementById(`eq-val-${i}`).textContent = '0';
+        if (eqFilters[i]) eqFilters[i].gain.value = 0;
+    });
+    showToast("EQ réinitialisé");
+};
 
 // ============================================================
 // NAVIGATION
