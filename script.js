@@ -41,6 +41,8 @@ function showToast(msg) {
 const EQ_FREQS = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
 let eqFilters = [];
 
+let monoMerger, monoSplitter, isMono = false;
+
 function initAudio() {
     if (audioContext) return;
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -60,12 +62,23 @@ function initAudio() {
         return f;
     });
 
-    // Chaîne : source → bass → treble → eq[0..9] → destination
+    // Nœuds mono : splitter → merger (L+R mixés sur les deux sorties)
+    monoSplitter = audioContext.createChannelSplitter(2);
+    monoMerger  = audioContext.createChannelMerger(2);
+    // L→0 et L→1 (on utilise uniquement le canal gauche pour les deux)
+    monoSplitter.connect(monoMerger, 0, 0);
+    monoSplitter.connect(monoMerger, 0, 1);
+
+    // Chaîne stéréo par défaut : source → bass → treble → eq[0..9] → destination
     source.connect(bassFilter);
     bassFilter.connect(trebleFilter);
     let prev = trebleFilter;
     eqFilters.forEach(f => { prev.connect(f); prev = f; });
+    // `prev` = dernier filtre EQ
     prev.connect(audioContext.destination);
+
+    // Référence au dernier nœud EQ pour pouvoir re-câbler en mono
+    window._lastEqNode = prev;
 }
 
 // ============================================================
@@ -209,6 +222,27 @@ function updateFilters() {
 }
 
 document.getElementById('loudness-btn').onclick = function () { this.classList.toggle('active-blue'); updateFilters(); };
+
+document.getElementById('mono-btn').onclick = function () {
+    isMono = !isMono;
+    this.classList.toggle('active-blue', isMono);
+
+    if (!window._lastEqNode) return;
+    const last = window._lastEqNode;
+
+    if (isMono) {
+        // Déconnecter la sortie stéréo directe et passer par le merger mono
+        last.disconnect(audioContext.destination);
+        last.connect(monoSplitter);
+        monoMerger.connect(audioContext.destination);
+    } else {
+        // Revenir en stéréo
+        last.disconnect(monoSplitter);
+        monoMerger.disconnect(audioContext.destination);
+        last.connect(audioContext.destination);
+    }
+    showToast(isMono ? '⊕ MONO' : '◎ STÉRÉO');
+};
 document.getElementById('mute-btn').onclick = function () {
     audio.muted = !audio.muted;
     this.classList.toggle('active-danger', audio.muted);
