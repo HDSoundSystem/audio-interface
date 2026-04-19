@@ -11,9 +11,9 @@ const playIcon = document.getElementById('play-icon');
 const metaDisplay = document.getElementById('display-meta');
 const pausePill = document.getElementById('pause-pill');
 const waveformContainer = document.getElementById('waveform-container');
-const waveformCanvas    = document.getElementById('waveform-canvas');
-const waveformPlayhead  = document.getElementById('waveform-playhead');
-const waveformProgress  = document.getElementById('waveform-progress');
+const waveformCanvas = document.getElementById('waveform-canvas');
+const waveformPlayhead = document.getElementById('waveform-playhead');
+const waveformProgress = document.getElementById('waveform-progress');
 const wCtx = waveformCanvas.getContext('2d');
 let waveformData = null; // Float32Array des peaks normalisés
 
@@ -91,7 +91,7 @@ function initAudio() {
 
     // Nœuds mono : splitter → merger (L+R mixés sur les deux sorties)
     monoSplitter = audioContext.createChannelSplitter(2);
-    monoMerger  = audioContext.createChannelMerger(2);
+    monoMerger = audioContext.createChannelMerger(2);
     // L→0 et L→1 (on utilise uniquement le canal gauche pour les deux)
     monoSplitter.connect(monoMerger, 0, 0);
     monoSplitter.connect(monoMerger, 0, 1);
@@ -178,7 +178,7 @@ function drawWaveform() {
 }
 
 function resizeWaveformCanvas() {
-    waveformCanvas.width  = waveformContainer.offsetWidth;
+    waveformCanvas.width = waveformContainer.offsetWidth;
     waveformCanvas.height = waveformContainer.offsetHeight;
     drawWaveform();
 }
@@ -504,7 +504,7 @@ function eqFreqToX(freq, width) {
 }
 
 function drawEqCurve() {
-    const W = eqCurveCanvas.width  = eqCurveCanvas.offsetWidth;
+    const W = eqCurveCanvas.width = eqCurveCanvas.offsetWidth;
     const H = eqCurveCanvas.height = eqCurveCanvas.offsetHeight;
     if (W === 0 || H === 0) return;
 
@@ -558,9 +558,9 @@ function drawEqCurve() {
     eqCurveCtx.lineTo(0, mid);
     eqCurveCtx.closePath();
     const grad = eqCurveCtx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0,   'rgba(0, 200, 80, 0.18)');
+    grad.addColorStop(0, 'rgba(0, 200, 80, 0.18)');
     grad.addColorStop(0.5, 'rgba(0, 200, 80, 0.06)');
-    grad.addColorStop(1,   'rgba(0, 200, 80, 0.02)');
+    grad.addColorStop(1, 'rgba(0, 200, 80, 0.02)');
     eqCurveCtx.fillStyle = grad;
     eqCurveCtx.fill();
 

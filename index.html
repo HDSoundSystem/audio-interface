@@ -157,94 +157,104 @@
                     </div>
                     <!-- EQ 10 BANDES -->
                     <div class="eq-section">
-                    <div class="eq-header">
-                        <span>EQ 10-BAND</span>
-                        <button id="eq-reset-btn">FLAT</button>
-                    </div>
-                    <canvas id="eq-curve-canvas"></canvas>
-                    <div class="eq-bands">
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-0">0</span>
-                            <input type="range" class="eq-slider" data-band="0"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">31</span>
+                        <div class="eq-header">
+                            <span>EQ 10-BAND</span>
+                            <button id="eq-reset-btn">FLAT</button>
                         </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-1">0</span>
-                            <input type="range" class="eq-slider" data-band="1"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">62</span>
+                        <canvas id="eq-curve-canvas"></canvas>
+                        <div class="eq-bands">
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-0">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="0"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">31</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-1">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="1"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">62</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-2">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="2"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">125</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-3">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="3"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">250</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-4">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="4"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">500</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-5">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="5"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">1k</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-6">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="6"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">2k</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-7">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="7"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">4k</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-8">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="8"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">8k</span>
+                            </div>
+                            <div class="eq-band">
+                                <span class="eq-val" id="eq-val-9">0</span>
+                                <input type="range" class="eq-slider"
+                                    data-band="9"
+                                    min="-12" max="12" step="0.5" value="0">
+                                <span class="eq-freq">16k</span>
+                            </div>
                         </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-2">0</span>
-                            <input type="range" class="eq-slider" data-band="2"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">125</span>
-                        </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-3">0</span>
-                            <input type="range" class="eq-slider" data-band="3"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">250</span>
-                        </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-4">0</span>
-                            <input type="range" class="eq-slider" data-band="4"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">500</span>
-                        </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-5">0</span>
-                            <input type="range" class="eq-slider" data-band="5"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">1k</span>
-                        </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-6">0</span>
-                            <input type="range" class="eq-slider" data-band="6"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">2k</span>
-                        </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-7">0</span>
-                            <input type="range" class="eq-slider" data-band="7"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">4k</span>
-                        </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-8">0</span>
-                            <input type="range" class="eq-slider" data-band="8"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">8k</span>
-                        </div>
-                        <div class="eq-band">
-                            <span class="eq-val" id="eq-val-9">0</span>
-                            <input type="range" class="eq-slider" data-band="9"
-                                min="-12" max="12" step="0.5" value="0">
-                            <span class="eq-freq">16k</span>
-                        </div>
-                    </div>
-                    <div class="fx-section-inline">
-                        <button id="eq-pop-btn"
-                            class="btn-toggle">POP</button>
-                        <button id="eq-rock-btn"
-                            class="btn-toggle">ROCK</button>
-                        <button id="eq-classic-btn"
-                            class="btn-toggle">CLASSIC</button>
+                        <div class="fx-section-inline">
+                            <button id="eq-pop-btn"
+                                class="btn-toggle">POP</button>
+                            <button id="eq-rock-btn"
+                                class="btn-toggle">ROCK</button>
+                            <button id="eq-classic-btn"
+                                class="btn-toggle">CLASSIC</button>
                             <button id="eq-live-btn"
-                            class="btn-toggle">LIVE</button>
+                                class="btn-toggle">LIVE</button>
                             <button id="eq-vocal-btn"
-                            class="btn-toggle">VOCAL</button>
+                                class="btn-toggle">VOCAL</button>
+                        </div>
+                        <div class="fx-section-inline">
+                            <button id="mono-btn"
+                                class="btn-toggle">MONO</button>
+                            <button id="loudness-btn"
+                                class="btn-toggle">LOUDNESS</button>
+                            <button id="bypass-btn"
+                                class="btn-toggle">BYPASS</button>
+                        </div>
                     </div>
-                    <div class="fx-section-inline">
-                        <button id="mono-btn"
-                            class="btn-toggle">MONO</button>
-                        <button id="loudness-btn"
-                            class="btn-toggle">LOUDNESS</button>
-                        <button id="bypass-btn"
-                            class="btn-toggle">BYPASS</button>
-                    </div>
-                </div>
                     <div class="control-group pitch-area">
                         <label>PITCH (<span id="val-pitch">100%</span>)</label>
                         <input type="range" id="pitch-slider"
@@ -326,4 +336,3 @@
         <script src="script.js"></script>
     </body>
 </html>
-
