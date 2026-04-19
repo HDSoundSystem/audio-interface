@@ -339,9 +339,19 @@ body {
 .time-readout-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: stretch;
     width: 100%;
-    margin-top: 8px;
+    margin-top: 10px;
+    flex: 1;
+}
+
+.time-meter-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    width: 65px;
+    height: 100%;
 }
 
 .time-box {
@@ -361,6 +371,80 @@ body {
     text-align: right;
 }
 
+.vu-meter-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    width: 100%;
+    flex: 1;
+}
+
+.vu-meter-label {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #8a8f97;
+    letter-spacing: 1px;
+    line-height: 1;
+    order: 2;
+}
+
+.vu-meter {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 1px;
+    width: 18px;
+    order: 1;
+    height: 100%;
+    min-height: 112px;
+    justify-content: flex-start;
+    padding: 5px 3px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, #0c0d10 0%, #171a1f 100%);
+    border: 1px solid #2b2f36;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.vu-led {
+    width: 12px;
+    height: 100%;
+    min-height: 4px;
+    flex: 1 1 0;
+    border-radius: 1px;
+    background: #15181d;
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    opacity: 0.16;
+    transition: opacity 0.05s ease, box-shadow 0.05s ease, transform 0.05s ease, background 0.05s ease;
+}
+
+.vu-led.active {
+    opacity: 1;
+    transform: scaleX(1.04);
+}
+
+.vu-led.green.active {
+    background: linear-gradient(180deg, #8cff65 0%, #2ee05f 100%);
+    box-shadow: 0 0 7px rgba(85, 255, 115, 0.5);
+}
+
+.vu-led.orange.active {
+    background: linear-gradient(180deg, #ffd15a 0%, #ff9b1f 100%);
+    box-shadow: 0 0 7px rgba(255, 176, 32, 0.5);
+}
+
+.vu-led.red.active {
+    background: linear-gradient(180deg, #ff8a8a 0%, #ff3c3c 100%);
+    box-shadow: 0 0 7px rgba(255, 77, 77, 0.58);
+}
+
+.vu-led.peak {
+    opacity: 1;
+    background: #ffe3a3;
+    box-shadow: 0 0 9px rgba(255, 220, 130, 0.8);
+    transform: scaleX(1.08);
+}
+
 #pause-pill {
     background: var(--accent);
     color: #000;
@@ -371,6 +455,8 @@ body {
     letter-spacing: 1px;
     display: none;
     animation: pause-pill-blink 1.1s steps(2, start) infinite;
+    align-self: flex-start;
+    margin-top: 2px;
 }
 
 @keyframes pause-pill-blink {

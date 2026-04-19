@@ -4,6 +4,7 @@ audio.crossOrigin = "anonymous";
 
 let playlist = [], playlistCovers = [], currentTrackIndex = 0;
 let audioContext, source, bassFilter, trebleFilter;
+let meterSplitter, meterLeftAnalyser, meterRightAnalyser, meterAnimationFrame = null;
 let loopA = null, loopB = null;
 let isShuffle = false, repeatMode = 0, showRemaining = false;
 
@@ -14,8 +15,13 @@ const waveformContainer = document.getElementById('waveform-container');
 const waveformCanvas = document.getElementById('waveform-canvas');
 const waveformPlayhead = document.getElementById('waveform-playhead');
 const waveformProgress = document.getElementById('waveform-progress');
+const vuMeterLeft = document.getElementById('vu-meter-left');
+const vuMeterRight = document.getElementById('vu-meter-right');
 const wCtx = waveformCanvas.getContext('2d');
 let waveformData = null; // Float32Array des peaks normalisés
+const VU_LED_COUNT = 16;
+let vuPeakLeft = 0;
+let vuPeakRight = 0;
 
 // ============================================================
 // PWA — Service Worker
@@ -58,6 +64,54 @@ function formatBpmValue(rawBpm) {
 
 function updatePausePill() {
     pausePill.style.display = (audio.src && audio.paused) ? "inline-flex" : "none";
+}
+
+function buildVuMeter(container) {
+    container.innerHTML = "";
+    for (let i = 0; i < VU_LED_COUNT; i++) {
+        const led = document.createElement('span');
+        led.className = `vu-led ${i < 11 ? 'green' : i < 14 ? 'orange' : 'red'}`;
+        container.appendChild(led);
+    }
+}
+
+function setVuMeterLevel(container, level, peakLevel) {
+    const litCount = Math.max(0, Math.min(VU_LED_COUNT, Math.round(level * VU_LED_COUNT)));
+    const peakIndex = Math.max(0, Math.min(VU_LED_COUNT - 1, Math.round(peakLevel * (VU_LED_COUNT - 1))));
+    Array.from(container.children).forEach((led, index) => {
+        led.classList.toggle('active', index < litCount);
+        led.classList.toggle('peak', index === peakIndex && peakLevel > 0.02);
+    });
+}
+
+function getAnalyserLevel(analyser) {
+    if (!analyser) return 0;
+    const data = new Uint8Array(analyser.fftSize);
+    analyser.getByteTimeDomainData(data);
+    let sum = 0;
+    for (let i = 0; i < data.length; i++) {
+        const sample = (data[i] - 128) / 128;
+        sum += sample * sample;
+    }
+    const rms = Math.sqrt(sum / data.length);
+    return Math.min(1, rms * 3.2);
+}
+
+function animateVuMeters() {
+    const leftLevel = getAnalyserLevel(meterLeftAnalyser);
+    const rightLevel = getAnalyserLevel(meterRightAnalyser);
+    vuPeakLeft = Math.max(leftLevel, vuPeakLeft - 0.018);
+    vuPeakRight = Math.max(rightLevel, vuPeakRight - 0.018);
+    setVuMeterLevel(vuMeterLeft, leftLevel, vuPeakLeft);
+    setVuMeterLevel(vuMeterRight, rightLevel, vuPeakRight);
+    meterAnimationFrame = requestAnimationFrame(animateVuMeters);
+}
+
+function initVuMeters() {
+    buildVuMeter(vuMeterLeft);
+    buildVuMeter(vuMeterRight);
+    setVuMeterLevel(vuMeterLeft, 0, 0);
+    setVuMeterLevel(vuMeterRight, 0, 0);
 }
 
 // ============================================================
@@ -103,6 +157,18 @@ function initAudio() {
     eqFilters.forEach(f => { prev.connect(f); prev = f; });
     // `prev` = dernier filtre EQ
     prev.connect(audioContext.destination);
+
+    meterSplitter = audioContext.createChannelSplitter(2);
+    meterLeftAnalyser = audioContext.createAnalyser();
+    meterRightAnalyser = audioContext.createAnalyser();
+    meterLeftAnalyser.fftSize = 256;
+    meterRightAnalyser.fftSize = 256;
+    meterLeftAnalyser.smoothingTimeConstant = 0.82;
+    meterRightAnalyser.smoothingTimeConstant = 0.82;
+    prev.connect(meterSplitter);
+    meterSplitter.connect(meterLeftAnalyser, 0);
+    meterSplitter.connect(meterRightAnalyser, 1);
+    if (!meterAnimationFrame) animateVuMeters();
 
     // Référence au dernier nœud EQ pour pouvoir re-câbler en mono
     window._lastEqNode = prev;
@@ -251,6 +317,7 @@ window.addEventListener('resize', resizeWaveformCanvas);
 
 // Init canvas size
 setTimeout(resizeWaveformCanvas, 0);
+initVuMeters();
 
 
 

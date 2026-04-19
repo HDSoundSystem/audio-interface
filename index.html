@@ -62,9 +62,21 @@
                         </div>
                     </div>
                     <div class="time-readout-row">
-                        <span id="current-time" class="time-box">00:00</span>
+                        <div class="time-meter-stack">
+                            <span id="current-time" class="time-box">00:00</span>
+                            <div class="vu-meter-wrap">
+                                <span class="vu-meter-label">L</span>
+                                <div id="vu-meter-left" class="vu-meter"></div>
+                            </div>
+                        </div>
                         <span id="pause-pill">PAUSE</span>
-                        <span id="duration" class="time-box">00:00</span>
+                        <div class="time-meter-stack">
+                            <span id="duration" class="time-box">00:00</span>
+                            <div class="vu-meter-wrap">
+                                <span class="vu-meter-label">R</span>
+                                <div id="vu-meter-right" class="vu-meter"></div>
+                            </div>
+                        </div>
                     </div>
                 </header>
 
