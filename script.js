@@ -39,12 +39,22 @@ function showToast(msg) {
     toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
 }
 
+function formatNowPlayingMeta(fileName, title, album, artist) {
+    const fallbackTitle = fileName.replace(/\.[^.]+$/, '');
+    return [
+        title || fallbackTitle,
+        album || "Album inconnu",
+        artist || "Artiste inconnu"
+    ].join(" - ");
+}
+
 // ============================================================
 // WEB AUDIO
 // ============================================================
 // Fréquences ISO standard 10 bandes
 const EQ_FREQS = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
 let eqFilters = [];
+const EQ_Q = 1.4;
 
 let monoMerger, monoSplitter, isMono = false;
 
@@ -62,7 +72,7 @@ function initAudio() {
         const f = audioContext.createBiquadFilter();
         f.type = "peaking";
         f.frequency.value = freq;
-        f.Q.value = 1.4;
+        f.Q.value = EQ_Q;
         f.gain.value = 0;
         return f;
     });
@@ -266,7 +276,7 @@ function loadTrack(index) {
         window.jsmediatags.read(file, {
             onSuccess: (tag) => {
                 const { title, artist, album, picture } = tag.tags;
-                metaDisplay.innerText = `${title || file.name.split('.')[0]} - ${artist || "Artiste"}`;
+                metaDisplay.innerText = formatNowPlayingMeta(file.name, title, album, artist);
                 if (picture) {
                     let b64 = "";
                     for (let i = 0; i < picture.data.length; i++) b64 += String.fromCharCode(picture.data[i]);
@@ -282,8 +292,13 @@ function loadTrack(index) {
                     resetCoverUI();
                 }
             },
-            onError: () => { metaDisplay.innerText = file.name; resetCoverUI(); }
+            onError: () => {
+                metaDisplay.innerText = formatNowPlayingMeta(file.name, "", "", "");
+                resetCoverUI();
+            }
         });
+    } else {
+        metaDisplay.innerText = formatNowPlayingMeta(file.name, "", "", "");
     }
     audio.play();
     playIcon.className = "fa-solid fa-pause";
@@ -340,7 +355,12 @@ function updateFilters() {
     });
 }
 
-document.getElementById('loudness-btn').onclick = function () { this.classList.toggle('active-blue'); updateFilters(); };
+document.getElementById('loudness-btn').onclick = function () {
+    initAudio();
+    this.classList.toggle('active-blue');
+    updateFilters();
+    drawEqCurve();
+};
 
 document.getElementById('mono-btn').onclick = function () {
     isMono = !isMono;
@@ -373,12 +393,16 @@ document.getElementById('volume-slider').oninput = (e) => {
     document.getElementById('val-volume').innerText = Math.round(e.target.value * 100) + "%";
 };
 document.getElementById('bass-slider').oninput = (e) => {
+    initAudio();
     updateFilters();
     document.getElementById('val-bass').innerText = e.target.value + "dB";
+    drawEqCurve();
 };
 document.getElementById('treble-slider').oninput = (e) => {
+    initAudio();
     updateFilters();
     document.getElementById('val-treble').innerText = e.target.value + "dB";
+    drawEqCurve();
 };
 document.getElementById('pitch-slider').oninput = (e) => {
     audio.playbackRate = e.target.value;
@@ -398,6 +422,7 @@ document.querySelectorAll('.btn-rst[data-target]').forEach(btn => {
 // ============================================================
 document.querySelectorAll('.eq-slider').forEach(slider => {
     slider.oninput = () => {
+        initAudio();
         const band = parseInt(slider.dataset.band);
         const val = parseFloat(slider.value);
         document.getElementById(`eq-val-${band}`).textContent = (val > 0 ? '+' : '') + val;
@@ -422,6 +447,41 @@ document.getElementById('eq-reset-btn').onclick = () => {
 const eqCurveCanvas = document.getElementById('eq-curve-canvas');
 const eqCurveCtx = eqCurveCanvas.getContext('2d');
 
+function buildEqFrequencies(count, minFreq, maxFreq) {
+    const freqs = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+        freqs[i] = minFreq * Math.pow(maxFreq / minFreq, i / Math.max(1, count - 1));
+    }
+    return freqs;
+}
+
+function getCombinedEqResponse(frequencies) {
+    const magnitudes = new Float32Array(frequencies.length).fill(1);
+
+    if (!audioContext || !bassFilter || !trebleFilter || eqFilters.length !== EQ_FREQS.length) {
+        return magnitudes;
+    }
+
+    const response = new Float32Array(frequencies.length);
+    const phase = new Float32Array(frequencies.length);
+
+    [bassFilter, trebleFilter, ...eqFilters].forEach(filter => {
+        filter.getFrequencyResponse(frequencies, response, phase);
+        for (let i = 0; i < magnitudes.length; i++) {
+            magnitudes[i] *= Math.max(response[i], 1e-6);
+        }
+    });
+
+    return magnitudes;
+}
+
+function eqFreqToX(freq, width) {
+    const minFreq = 20;
+    const maxFreq = 20000;
+    const ratio = Math.log(freq / minFreq) / Math.log(maxFreq / minFreq);
+    return Math.max(0, Math.min(width - 1, ratio * (width - 1)));
+}
+
 function drawEqCurve() {
     const W = eqCurveCanvas.width  = eqCurveCanvas.offsetWidth;
     const H = eqCurveCanvas.height = eqCurveCanvas.offsetHeight;
@@ -442,34 +502,25 @@ function drawEqCurve() {
     eqCurveCtx.lineTo(W, mid);
     eqCurveCtx.stroke();
 
-    // Calculer la réponse sur N points en fréquence (log scale 20Hz–20kHz)
-    const N = W;
-    const freqMin = 20, freqMax = 20000;
-    const dbRange = 14; // ±14 dB affiché
-    const gains = Array.from(document.querySelectorAll('.eq-slider')).map(s => parseFloat(s.value));
-    const freqs  = EQ_FREQS;
-    const Qs     = 1.4;
+    // Repères verticaux des bandes EQ
+    eqCurveCtx.strokeStyle = 'rgba(255,255,255,0.08)';
+    eqCurveCtx.lineWidth = 1;
+    EQ_FREQS.forEach(freq => {
+        const x = eqFreqToX(freq, W);
+        eqCurveCtx.beginPath();
+        eqCurveCtx.moveTo(x, 4);
+        eqCurveCtx.lineTo(x, H - 4);
+        eqCurveCtx.stroke();
+    });
 
-    // Pour chaque pixel, somme la contribution de chaque bande (peaking filter)
+    // Calculer la reponse exacte des filtres Web Audio sur N points
+    const N = W;
+    const dbRange = 8;
+    const frequencies = buildEqFrequencies(N, 20, 20000);
+    const magnitudes = getCombinedEqResponse(frequencies);
     const points = new Float32Array(N);
     for (let x = 0; x < N; x++) {
-        const freq = freqMin * Math.pow(freqMax / freqMin, x / (N - 1));
-        let totalDb = 0;
-        for (let b = 0; b < freqs.length; b++) {
-            if (gains[b] === 0) continue;
-            // Formule réponse peaking filter en dB
-            const f0 = freqs[b];
-            const gain = gains[b];
-            const Q = Qs;
-            const w  = freq / f0;
-            const w2 = w * w;
-            const A  = Math.pow(10, gain / 40); // amplitude linéaire (demi-gain)
-            // H(w) en amplitude = sqrt( (w2 + A*(w/Q) + 1) / (w2 + (w/Q)/A + 1) )
-            const num = w2 + A * (w / Q) + 1;
-            const den = w2 + (w / Q) / A + 1;
-            totalDb += 20 * Math.log10(Math.sqrt(num / den));
-        }
-        points[x] = totalDb;
+        points[x] = 20 * Math.log10(Math.max(magnitudes[x], 1e-6));
     }
 
     // Dessiner la courbe
@@ -501,9 +552,20 @@ function drawEqCurve() {
         else eqCurveCtx.lineTo(x, y);
     }
     eqCurveCtx.strokeStyle = '#00c850';
-    eqCurveCtx.lineWidth = 1.5;
+    eqCurveCtx.lineWidth = 2.25;
     eqCurveCtx.lineJoin = 'round';
     eqCurveCtx.stroke();
+
+    // Points de contrôle visibles pour chaque bande
+    eqCurveCtx.fillStyle = '#7dffad';
+    EQ_FREQS.forEach(freq => {
+        const x = Math.round(eqFreqToX(freq, W));
+        const db = Math.max(-dbRange, Math.min(dbRange, points[x]));
+        const y = mid - (db / dbRange) * (mid - 4);
+        eqCurveCtx.beginPath();
+        eqCurveCtx.arc(x, y, 3, 0, Math.PI * 2);
+        eqCurveCtx.fill();
+    });
 }
 
 // Dessiner au démarrage et quand la fenêtre change de taille
@@ -843,3 +905,4 @@ function castCurrentTrack() {
     if (!castSession || !playlist[currentTrackIndex]) return;
     showToast("⚠ Cast: nécessite une URL de stream");
 }
+

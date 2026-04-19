@@ -54,12 +54,14 @@
                     </div>
                     <div id="display-meta">CHARGEZ VOS FICHIERS</div>
                     <div class="time-rail">
-                        <span id="current-time" class="time-box">00:00</span>
                         <div id="waveform-container">
                             <canvas id="waveform-canvas"></canvas>
                             <div id="waveform-playhead"></div>
                             <div id="waveform-progress"></div>
                         </div>
+                    </div>
+                    <div class="time-readout-row">
+                        <span id="current-time" class="time-box">00:00</span>
                         <span id="duration" class="time-box">00:00</span>
                     </div>
                 </header>
@@ -232,8 +234,6 @@
                             <button id="eq-vocal-btn"
                             class="btn-toggle">VOCAL</button>
                     </div>
-                </div>
-
                     <div class="fx-section-inline">
                         <button id="mono-btn"
                             class="btn-toggle">MONO</button>
@@ -242,6 +242,7 @@
                         <button id="bypass-btn"
                             class="btn-toggle">BYPASS</button>
                     </div>
+                </div>
                     <div class="control-group pitch-area">
                         <label>PITCH (<span id="val-pitch">100%</span>)</label>
                         <input type="range" id="pitch-slider"
