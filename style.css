@@ -310,12 +310,12 @@ body {
 
 .time-box {
     font-weight: 700;
-    font-family: 'BitCount Single', 'bitcount single', monospace;
+    font-family: 'Nunito', sans-serif;
     width: 65px;
     text-align: center;
     font-size: 1rem;
     letter-spacing: 2px;
-    color: var(--accent);
+    color: white;
 }
 
 /* WAVEFORM */
@@ -349,7 +349,7 @@ body {
     top: 0; bottom: 0;
     left: 0%;
     width: 2px;
-    background: var(--accent);
+    background: white;
     z-index: 3;
     pointer-events: none;
     box-shadow: 0 0 6px var(--accent);
