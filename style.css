@@ -2,7 +2,7 @@
     --bg-color: #0f1012;
     --panel-color: #1a1c20;
     --sidebar-color: #141518;
-    --accent: #b1786b;
+    --accent: #4c637e;
     --text-main: #e0e0e0;
     --danger: #ff4444;
 }
@@ -305,6 +305,7 @@ body {
 
 .time-box {
     font-weight: 700;
+    font-family: 'bitcount single', sans-serif;
     width: 65px;
     text-align: center;
     font-size: 0.8rem;
