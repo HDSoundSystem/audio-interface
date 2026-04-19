@@ -147,26 +147,8 @@
                         <button class="btn-rst"
                             data-target="treble-slider">RST</button>
                     </div>
-                    <div class="fx-section-inline">
-                        <button id="mono-btn"
-                            class="btn-toggle">MONO</button>
-                        <button id="loudness-btn"
-                            class="btn-toggle">LOUDNESS</button>
-                        <button id="bypass-btn"
-                            class="btn-toggle">BYPASS</button>
-                    </div>
-                    <div class="control-group pitch-area">
-                        <label>PITCH (<span id="val-pitch">100%</span>)</label>
-                        <input type="range" id="pitch-slider"
-                            class="vertical-slider" min="0.5" max="1.5"
-                            step="0.01" value="1">
-                        <button class="btn-rst"
-                            data-target="pitch-slider">RST</button>
-                    </div>
-                </div>
-
-                <!-- EQ 10 BANDES -->
-                <div class="eq-section">
+                    <!-- EQ 10 BANDES -->
+                    <div class="eq-section">
                     <div class="eq-header">
                         <span>EQ 10-BAND</span>
                         <button id="eq-reset-btn">FLAT</button>
@@ -232,6 +214,24 @@
                                 min="-12" max="12" step="0.5" value="0">
                             <span class="eq-freq">16k</span>
                         </div>
+                    </div>
+                </div>
+
+                    <div class="fx-section-inline">
+                        <button id="mono-btn"
+                            class="btn-toggle">MONO</button>
+                        <button id="loudness-btn"
+                            class="btn-toggle">LOUDNESS</button>
+                        <button id="bypass-btn"
+                            class="btn-toggle">BYPASS</button>
+                    </div>
+                    <div class="control-group pitch-area">
+                        <label>PITCH (<span id="val-pitch">100%</span>)</label>
+                        <input type="range" id="pitch-slider"
+                            class="vertical-slider" min="0.5" max="1.5"
+                            step="0.01" value="1">
+                        <button class="btn-rst"
+                            data-target="pitch-slider">RST</button>
                     </div>
                 </div>
             </aside>
