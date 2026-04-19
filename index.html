@@ -8,10 +8,16 @@
         <meta name="description" content="Pro Audio Mixer - Studio Edition PWA">
         <link rel="manifest" href="manifest.json">
         <link rel="apple-touch-icon" href="icon-192.png">
+        <link rel="icon" type="image/png" href="img/favicon.png">
         <link rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         <link
             href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap"
+            rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=BitCount+Single:wght@400;700&display=swap"
             rel="stylesheet">
         <link rel="stylesheet" href="style.css">
         <!-- Chromecast SDK -->
@@ -49,8 +55,11 @@
                     <div id="display-meta">CHARGEZ VOS FICHIERS</div>
                     <div class="time-rail">
                         <span id="current-time" class="time-box">00:00</span>
-                        <input type="range" id="seek-slider" value="0" min="0"
-                            max="100">
+                        <div id="waveform-container">
+                            <canvas id="waveform-canvas"></canvas>
+                            <div id="waveform-playhead"></div>
+                            <div id="waveform-progress"></div>
+                        </div>
                         <span id="duration" class="time-box">00:00</span>
                     </div>
                 </header>
@@ -142,28 +151,13 @@
                         <button class="btn-rst"
                             data-target="treble-slider">RST</button>
                     </div>
-                    <div class="fx-section-inline">
-                        <button id="loudness-btn"
-                            class="btn-toggle">LOUDNESS</button>
-                        <button id="bypass-btn" class="btn-toggle">BYPASS
-                            EQ</button>
-                    </div>
-                    <div class="control-group pitch-area">
-                        <label>PITCH (<span id="val-pitch">100%</span>)</label>
-                        <input type="range" id="pitch-slider"
-                            class="vertical-slider" min="0.5" max="1.5"
-                            step="0.01" value="1">
-                        <button class="btn-rst"
-                            data-target="pitch-slider">RST</button>
-                    </div>
-                </div>
-
-                <!-- EQ ISO 10 BANDES -->
-                <div class="eq-section">
+                    <!-- EQ 10 BANDES -->
+                    <div class="eq-section">
                     <div class="eq-header">
-                        <span>EQ ISO 10-BAND</span>
+                        <span>EQ 10-BAND</span>
                         <button id="eq-reset-btn">FLAT</button>
                     </div>
+                    <canvas id="eq-curve-canvas"></canvas>
                     <div class="eq-bands">
                         <div class="eq-band">
                             <span class="eq-val" id="eq-val-0">0</span>
@@ -225,6 +219,24 @@
                                 min="-12" max="12" step="0.5" value="0">
                             <span class="eq-freq">16k</span>
                         </div>
+                    </div>
+                </div>
+
+                    <div class="fx-section-inline">
+                        <button id="mono-btn"
+                            class="btn-toggle">MONO</button>
+                        <button id="loudness-btn"
+                            class="btn-toggle">LOUDNESS</button>
+                        <button id="bypass-btn"
+                            class="btn-toggle">BYPASS</button>
+                    </div>
+                    <div class="control-group pitch-area">
+                        <label>PITCH (<span id="val-pitch">100%</span>)</label>
+                        <input type="range" id="pitch-slider"
+                            class="vertical-slider" min="0.5" max="1.5"
+                            step="0.01" value="1">
+                        <button class="btn-rst"
+                            data-target="pitch-slider">RST</button>
                     </div>
                 </div>
             </aside>

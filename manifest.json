@@ -3,12 +3,12 @@
   "name": "Pro Audio Mixer",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "img/favicon.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "icon-512.png",
+      "src": "img/favicon.png",
       "type": "image/png",
       "sizes": "512x512"
     }
