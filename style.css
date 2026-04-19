@@ -60,7 +60,21 @@ body {
 }
 #playlist-ul li.active-track .track-name { color: var(--accent); }
 
-.drag-handle {
+.track-thumb {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #0a0a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    font-size: 0.7rem;
+    border: 1px solid #2a2d32;
+}
+.track-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
     padding: 12px 6px 12px 12px;
     cursor: grab;
     color: #333;

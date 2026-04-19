@@ -2,7 +2,7 @@ const audio = new Audio();
 audio.volume = 0.05;
 audio.crossOrigin = "anonymous";
 
-let playlist = [], currentTrackIndex = 0;
+let playlist = [], playlistCovers = [], currentTrackIndex = 0;
 let audioContext, source, bassFilter, trebleFilter;
 let loopA = null, loopB = null;
 let isShuffle = false, repeatMode = 0, showRemaining = false;
@@ -329,6 +329,28 @@ function addFiles(files) {
     );
     if (audioFiles.length === 0) return;
     const wasEmpty = playlist.length === 0;
+
+    audioFiles.forEach((f, i) => {
+        const idx = playlist.length + i;
+        playlistCovers[idx] = null; // null = pas encore chargé
+        if (window.jsmediatags) {
+            window.jsmediatags.read(f, {
+                onSuccess: (tag) => {
+                    const pic = tag.tags.picture;
+                    if (pic) {
+                        let b64 = "";
+                        for (let j = 0; j < pic.data.length; j++) b64 += String.fromCharCode(pic.data[j]);
+                        playlistCovers[idx] = `data:${pic.format};base64,${window.btoa(b64)}`;
+                    } else {
+                        playlistCovers[idx] = '';
+                    }
+                    renderPlaylist();
+                },
+                onError: () => { playlistCovers[idx] = ''; renderPlaylist(); }
+            });
+        }
+    });
+
     playlist.push(...audioFiles);
     renderPlaylist();
     if (wasEmpty) loadTrack(0);
@@ -355,6 +377,7 @@ function renderPlaylist() {
 
         li.innerHTML = `
             <span class="drag-handle" title="Glisser pour réorganiser"><i class="fa-solid fa-grip-vertical"></i></span>
+            <span class="track-thumb">${playlistCovers[i] ? `<img src="${playlistCovers[i]}" alt="">` : '<i class="fa-solid fa-music"></i>'}</span>
             <span class="track-name" title="${f.name}">${f.name.replace(/\.[^.]+$/, '')}</span>
             <button class="btn-delete-track" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
         `;
@@ -398,9 +421,11 @@ function renderPlaylist() {
             const mid = li.getBoundingClientRect().top + li.getBoundingClientRect().height / 2;
             const insertBefore = ev.clientY < mid;
             const moved = playlist.splice(fromIndex, 1)[0];
+            const movedCover = playlistCovers.splice(fromIndex, 1)[0];
             let insertAt = insertBefore ? toIndex : toIndex + 1;
             if (fromIndex < toIndex) insertAt--;
             playlist.splice(insertAt, 0, moved);
+            playlistCovers.splice(insertAt, 0, movedCover);
 
             if (currentTrackIndex === fromIndex) {
                 currentTrackIndex = insertAt;
@@ -421,6 +446,7 @@ function renderPlaylist() {
 function deleteTrack(index) {
     const isPlaying = index === currentTrackIndex;
     playlist.splice(index, 1);
+    playlistCovers.splice(index, 1);
 
     if (playlist.length === 0) {
         audio.pause();
