@@ -30,15 +30,15 @@
             <aside class="playlist-sidebar" id="playlist-sidebar">
                 <div class="sidebar-header">
                     <span><i class="fa-solid fa-list-ul"></i> PLAYLIST</span>
-                    <span class="track-count" id="track-count">0 PISTE</span>
+                    <span class="track-count" id="track-count">0 TRACK</span>
                 </div>
                 <div id="drop-zone">
                     <i class="fa-solid fa-music"></i>
-                    <span>DÉPOSER DES FICHIERS</span>
+                    <span>DROP FILES</span>
                 </div>
                 <ul id="playlist-ul"><li class="empty-msg"
-                        style="padding:12px 20px;color:#555;font-size:0.75rem;">Aucun
-                        fichier chargé</li></ul>
+                        style="padding:12px 20px;color:#555;font-size:0.75rem;">No
+                        file loaded</li></ul>
             </aside>
 
             <main class="player-container">
@@ -46,13 +46,14 @@
                     <div class="album-art-container" id="art-trigger">
                         <span id="file-format">---</span>
                         <span id="file-bitrate">--- KBPS</span>
+                        <span id="file-bpm">--- BPM</span>
                         <span id="ab-status-badge" style="display: none;">A-B
                             ACTIVE</span>
                         <span id="no-cover-text">NO COVER</span>
                         <img id="album-art" src alt="Album Art"
                             style="display: none;">
                     </div>
-                    <div id="display-meta">CHARGEZ VOS FICHIERS</div>
+                    <div id="display-meta">LOAD YOUR FILES</div>
                     <div class="time-rail">
                         <div id="waveform-container">
                             <canvas id="waveform-canvas"></canvas>
@@ -62,6 +63,7 @@
                     </div>
                     <div class="time-readout-row">
                         <span id="current-time" class="time-box">00:00</span>
+                        <span id="pause-pill">PAUSE</span>
                         <span id="duration" class="time-box">00:00</span>
                     </div>
                 </header>
@@ -70,38 +72,38 @@
                     <div class="control-subgroup left">
                         <button id="time-toggle-btn"
                             class="btn-tool-nav secondary"
-                            title="Temps restant (T)"><i
+                            title="Remaining time (T)"><i
                                 class="fa-regular fa-clock"></i></button>
                         <button id="shuffle-btn" class="btn-tool-nav secondary"
-                            title="Aléatoire (S)"><i
+                            title="Shuffle (S)"><i
                                 class="fa-solid fa-shuffle"></i></button>
                     </div>
 
                     <div class="control-subgroup main-nav">
                         <button id="rewind-btn" class="btn-tool-nav secondary"
-                            title="Reculer 10s (←)"><i
+                            title="Back 10s (Left Arrow)"><i
                                 class="fa-solid fa-backward-fast"></i></button>
                         <button id="prev-btn" class="btn-tool-nav secondary"
-                            title="Piste précédente (P)"><i
+                            title="Previous track (P)"><i
                                 class="fa-solid fa-backward-step"></i></button>
                         <button id="play-pause" class="btn-play"
-                            title="Lecture/Pause (Espace)"><i
+                            title="Play/Pause (Space)"><i
                                 class="fa-solid fa-play"
                                 id="play-icon"></i></button>
                         <button id="next-btn" class="btn-tool-nav secondary"
-                            title="Piste suivante (N)"><i
+                            title="Next track (N)"><i
                                 class="fa-solid fa-forward-step"></i></button>
                         <button id="forward-btn" class="btn-tool-nav secondary"
-                            title="Avancer 10s (→)"><i
+                            title="Forward 10s (Right Arrow)"><i
                                 class="fa-solid fa-forward-fast"></i></button>
                     </div>
 
                     <div class="control-subgroup right">
                         <button id="repeat-btn" class="btn-tool-nav secondary"
-                            title="Répétition (R)"><i
+                            title="Repeat (R)"><i
                                 class="fa-solid fa-repeat"></i></button>
                         <button id="ab-loop-btn" class="btn-tool-nav secondary"
-                            title="Boucle A-B"><span class="ab-a">A</span><span
+                            title="A-B loop"><span class="ab-a">A</span><span
                                 class="ab-sep">-</span><span
                                 class="ab-b">B</span></button>
                     </div>
@@ -111,7 +113,7 @@
                     <input type="file" id="file-upload" style="display:none"
                         accept="audio/*" multiple>
                     <button id="eject-btn" class="btn-bottom-tool"
-                        title="Charger des fichiers (O)"><i
+                        title="Load files (O)"><i
                             class="fa-solid fa-eject"></i></button>
                     <!-- Chromecast -->
                     <button id="cast-btn" class="btn-bottom-tool"
@@ -119,9 +121,9 @@
                         <google-cast-button></google-cast-button>
                     </button>
                     <button id="kbd-help-btn" class="btn-bottom-tool"
-                        title="Raccourcis clavier (?)"><i
+                        title="Keyboard shortcuts (?)"><i
                             class="fa-solid fa-keyboard"></i></button>
-                    <button class="btn-bottom-tool" title="Paramètres"><i
+                    <button class="btn-bottom-tool" title="Settings"><i
                             class="fa-solid fa-gear"></i></button>
                 </nav>
             </main>
@@ -276,42 +278,42 @@
                 <button id="close-kbd-modal" class="btn-close-modal"><i
                         class="fa-solid fa-xmark"></i></button>
                 <h2
-                    style="color:var(--accent); margin-top:0; font-size:1rem; letter-spacing:2px;">RACCOURCIS
-                    CLAVIER</h2>
+                    style="color:var(--accent); margin-top:0; font-size:1rem; letter-spacing:2px;">KEYBOARD
+                    SHORTCUTS</h2>
                 <table
                     style="width:100%; border-collapse:collapse; font-size:0.8rem; color:#aaa;">
                     <tr><td
-                            style="padding:6px 0; color:var(--accent); font-weight:700;">Espace</td><td>Lecture
+                            style="padding:6px 0; color:var(--accent); font-weight:700;">Space</td><td>Play
                             / Pause</td></tr>
                     <tr><td
                             style="padding:6px 0; color:var(--accent); font-weight:700;">←
-                            →</td><td>Reculer / Avancer 10s</td></tr>
+                            â†’</td><td>Back / Forward 10s</td></tr>
                     <tr><td
-                            style="padding:6px 0; color:var(--accent); font-weight:700;">N</td><td>Piste
-                            suivante</td></tr>
+                            style="padding:6px 0; color:var(--accent); font-weight:700;">N</td><td>Next
+                            track</td></tr>
                     <tr><td
-                            style="padding:6px 0; color:var(--accent); font-weight:700;">P</td><td>Piste
-                            précédente</td></tr>
+                            style="padding:6px 0; color:var(--accent); font-weight:700;">P</td><td>Previous
+                            track</td></tr>
                     <tr><td
-                            style="padding:6px 0; color:var(--accent); font-weight:700;">S</td><td>Mode
-                            aléatoire</td></tr>
+                            style="padding:6px 0; color:var(--accent); font-weight:700;">S</td><td>Shuffle
+                            mode</td></tr>
                     <tr><td
-                            style="padding:6px 0; color:var(--accent); font-weight:700;">R</td><td>Mode
-                            répétition</td></tr>
+                            style="padding:6px 0; color:var(--accent); font-weight:700;">R</td><td>Repeat
+                            mode</td></tr>
                     <tr><td
                             style="padding:6px 0; color:var(--accent); font-weight:700;">M</td><td>Mute</td></tr>
                     <tr><td
-                            style="padding:6px 0; color:var(--accent); font-weight:700;">T</td><td>Afficher
-                            temps restant</td></tr>
+                            style="padding:6px 0; color:var(--accent); font-weight:700;">T</td><td>Show
+                            remaining time</td></tr>
                     <tr><td
-                            style="padding:6px 0; color:var(--accent); font-weight:700;">O</td><td>Ouvrir
-                            des fichiers</td></tr>
+                            style="padding:6px 0; color:var(--accent); font-weight:700;">O</td><td>Open
+                            files</td></tr>
                     <tr><td
                             style="padding:6px 0; color:var(--accent); font-weight:700;">↑
                             ↓</td><td>Volume +/- 5%</td></tr>
                     <tr><td
-                            style="padding:6px 0; color:var(--accent); font-weight:700;">?</td><td>Afficher
-                            cette aide</td></tr>
+                            style="padding:6px 0; color:var(--accent); font-weight:700;">?</td><td>Show
+                            this help</td></tr>
                 </table>
             </div>
         </div>
@@ -324,3 +326,4 @@
         <script src="script.js"></script>
     </body>
 </html>
+

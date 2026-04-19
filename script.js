@@ -9,6 +9,7 @@ let isShuffle = false, repeatMode = 0, showRemaining = false;
 
 const playIcon = document.getElementById('play-icon');
 const metaDisplay = document.getElementById('display-meta');
+const pausePill = document.getElementById('pause-pill');
 const waveformContainer = document.getElementById('waveform-container');
 const waveformCanvas    = document.getElementById('waveform-canvas');
 const waveformPlayhead  = document.getElementById('waveform-playhead');
@@ -43,9 +44,20 @@ function formatNowPlayingMeta(fileName, title, album, artist) {
     const fallbackTitle = fileName.replace(/\.[^.]+$/, '');
     return [
         title || fallbackTitle,
-        album || "Album inconnu",
-        artist || "Artiste inconnu"
+        album || "Unknown album",
+        artist || "Unknown artist"
     ].join(" - ");
+}
+
+function formatBpmValue(rawBpm) {
+    if (rawBpm === undefined || rawBpm === null || rawBpm === "") return "--- BPM";
+    const bpm = parseFloat(String(rawBpm).replace(",", "."));
+    if (!Number.isFinite(bpm) || bpm <= 0) return "--- BPM";
+    return `${Math.round(bpm)} BPM`;
+}
+
+function updatePausePill() {
+    pausePill.style.display = (audio.src && audio.paused) ? "inline-flex" : "none";
 }
 
 // ============================================================
@@ -118,6 +130,11 @@ audio.ontimeupdate = () => {
         audio.currentTime = loopA;
     }
 };
+
+audio.addEventListener('play', updatePausePill);
+audio.addEventListener('pause', updatePausePill);
+audio.addEventListener('ended', updatePausePill);
+audio.addEventListener('emptied', updatePausePill);
 
 function formatTime(s) {
     if (isNaN(s) || s < 0) return "00:00";
@@ -275,8 +292,9 @@ function loadTrack(index) {
     if (window.jsmediatags) {
         window.jsmediatags.read(file, {
             onSuccess: (tag) => {
-                const { title, artist, album, picture } = tag.tags;
+                const { title, artist, album, picture, bpm, TBPM } = tag.tags;
                 metaDisplay.innerText = formatNowPlayingMeta(file.name, title, album, artist);
+                document.getElementById('file-bpm').innerText = formatBpmValue(bpm ?? TBPM);
                 if (picture) {
                     let b64 = "";
                     for (let i = 0; i < picture.data.length; i++) b64 += String.fromCharCode(picture.data[i]);
@@ -294,14 +312,17 @@ function loadTrack(index) {
             },
             onError: () => {
                 metaDisplay.innerText = formatNowPlayingMeta(file.name, "", "", "");
+                document.getElementById('file-bpm').innerText = "--- BPM";
                 resetCoverUI();
             }
         });
     } else {
         metaDisplay.innerText = formatNowPlayingMeta(file.name, "", "", "");
+        document.getElementById('file-bpm').innerText = "--- BPM";
     }
     audio.play();
     playIcon.className = "fa-solid fa-pause";
+    updatePausePill();
     castCurrentTrack();
 }
 
@@ -380,7 +401,7 @@ document.getElementById('mono-btn').onclick = function () {
         monoMerger.disconnect(audioContext.destination);
         last.connect(audioContext.destination);
     }
-    showToast(isMono ? '⊕ MONO' : '◎ STÉRÉO');
+    showToast(isMono ? 'MONO' : 'STEREO');
 };
 document.getElementById('mute-btn').onclick = function () {
     audio.muted = !audio.muted;
@@ -438,7 +459,7 @@ document.getElementById('eq-reset-btn').onclick = () => {
         if (eqFilters[i]) eqFilters[i].gain.value = 0;
     });
     drawEqCurve();
-    showToast("EQ réinitialisé");
+    showToast("EQ reset");
 };
 
 // ============================================================
@@ -581,23 +602,24 @@ document.getElementById('play-pause').onclick = () => {
     if (audioContext.state === 'suspended') audioContext.resume();
     if (audio.paused) { audio.play(); playIcon.className = "fa-solid fa-pause"; }
     else { audio.pause(); playIcon.className = "fa-solid fa-play"; }
+    updatePausePill();
 };
 
 document.getElementById('prev-btn').onclick = () => loadTrack(Math.max(0, currentTrackIndex - 1));
 document.getElementById('next-btn').onclick = nextTrack;
-document.getElementById('rewind-btn').onclick = () => { audio.currentTime -= 10; showToast("◀◀ -10s"); };
-document.getElementById('forward-btn').onclick = () => { audio.currentTime += 10; showToast("▶▶ +10s"); };
+document.getElementById('rewind-btn').onclick = () => { audio.currentTime -= 10; showToast("<< -10s"); };
+document.getElementById('forward-btn').onclick = () => { audio.currentTime += 10; showToast(">> +10s"); };
 
 document.getElementById('repeat-btn').onclick = function () {
     repeatMode = (repeatMode + 1) % 3;
     this.classList.toggle('active-blue', repeatMode > 0);
-    showToast(["Répétition OFF", "Répétition playlist", "Répétition piste"][repeatMode]);
+    showToast(["Repeat OFF", "Repeat playlist", "Repeat track"][repeatMode]);
 };
 
 document.getElementById('shuffle-btn').onclick = function () {
     isShuffle = !isShuffle;
     this.classList.toggle('active-blue', isShuffle);
-    showToast(isShuffle ? "Aléatoire ON" : "Aléatoire OFF");
+    showToast(isShuffle ? "Shuffle ON" : "Shuffle OFF");
 };
 
 // ============================================================
@@ -628,35 +650,35 @@ document.addEventListener('keydown', (e) => {
         case 'Space':
             e.preventDefault();
             document.getElementById('play-pause').click();
-            showToast(audio.paused ? "⏸ Pause" : "▶ Lecture");
+            showToast(audio.paused ? "Pause" : "Play");
             break;
         case 'ArrowLeft':
             e.preventDefault();
             audio.currentTime = Math.max(0, audio.currentTime - 10);
-            showToast("◀◀ -10s");
+            showToast("<< -10s");
             break;
         case 'ArrowRight':
             e.preventDefault();
             audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 10);
-            showToast("▶▶ +10s");
+            showToast(">> +10s");
             break;
         case 'ArrowUp':
             e.preventDefault();
             audio.volume = Math.min(1, audio.volume + 0.05);
             document.getElementById('volume-slider').value = audio.volume;
             document.getElementById('val-volume').innerText = Math.round(audio.volume * 100) + "%";
-            showToast("🔊 Vol " + Math.round(audio.volume * 100) + "%");
+            showToast("Volume " + Math.round(audio.volume * 100) + "%");
             break;
         case 'ArrowDown':
             e.preventDefault();
             audio.volume = Math.max(0, audio.volume - 0.05);
             document.getElementById('volume-slider').value = audio.volume;
             document.getElementById('val-volume').innerText = Math.round(audio.volume * 100) + "%";
-            showToast("🔉 Vol " + Math.round(audio.volume * 100) + "%");
+            showToast("Volume " + Math.round(audio.volume * 100) + "%");
             break;
-        case 'KeyN': nextTrack(); showToast("⏭ Piste suivante"); break;
-        case 'KeyP': loadTrack(Math.max(0, currentTrackIndex - 1)); showToast("⏮ Piste précédente"); break;
-        case 'KeyM': document.getElementById('mute-btn').click(); showToast(audio.muted ? "🔇 Mute ON" : "🔊 Mute OFF"); break;
+        case 'KeyN': nextTrack(); showToast("Next track"); break;
+        case 'KeyP': loadTrack(Math.max(0, currentTrackIndex - 1)); showToast("Previous track"); break;
+        case 'KeyM': document.getElementById('mute-btn').click(); showToast(audio.muted ? "Mute ON" : "Mute OFF"); break;
         case 'KeyR': document.getElementById('repeat-btn').click(); break;
         case 'KeyS': document.getElementById('shuffle-btn').click(); break;
         case 'KeyT': document.getElementById('time-toggle-btn').click(); break;
@@ -706,7 +728,7 @@ function addFiles(files) {
     playlist.push(...audioFiles);
     renderPlaylist();
     if (wasEmpty) loadTrack(0);
-    showToast(`+${audioFiles.length} piste${audioFiles.length > 1 ? 's' : ''} ajoutée${audioFiles.length > 1 ? 's' : ''}`);
+    showToast(`+${audioFiles.length} track${audioFiles.length > 1 ? 's' : ''} added`);
 }
 
 function renderPlaylist() {
@@ -714,12 +736,12 @@ function renderPlaylist() {
     ul.innerHTML = "";
 
     if (playlist.length === 0) {
-        ul.innerHTML = '<li style="padding:12px 20px;color:#555;font-size:0.75rem;pointer-events:none;">Aucun fichier chargé</li>';
-        document.getElementById('track-count').textContent = '0 PISTE';
+        ul.innerHTML = '<li style="padding:12px 20px;color:#555;font-size:0.75rem;pointer-events:none;">No file loaded</li>';
+        document.getElementById('track-count').textContent = '0 TRACK';
         return;
     }
 
-    document.getElementById('track-count').textContent = playlist.length + ' PISTE' + (playlist.length > 1 ? 'S' : '');
+    document.getElementById('track-count').textContent = playlist.length + ' TRACK' + (playlist.length > 1 ? 'S' : '');
 
     playlist.forEach((f, i) => {
         const li = document.createElement('li');
@@ -728,10 +750,10 @@ function renderPlaylist() {
         if (i === currentTrackIndex) li.classList.add('active-track');
 
         li.innerHTML = `
-            <span class="drag-handle" title="Glisser pour réorganiser"><i class="fa-solid fa-grip-vertical"></i></span>
+            <span class="drag-handle" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></span>
             <span class="track-thumb">${playlistCovers[i] ? `<img src="${playlistCovers[i]}" alt="">` : '<i class="fa-solid fa-music"></i>'}</span>
             <span class="track-name" title="${f.name}">${f.name.replace(/\.[^.]+$/, '')}</span>
-            <button class="btn-delete-track" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+            <button class="btn-delete-track" title="Delete"><i class="fa-solid fa-xmark"></i></button>
         `;
 
         li.querySelector('.track-name').onclick = () => loadTrack(i);
@@ -788,7 +810,7 @@ function renderPlaylist() {
             }
 
             renderPlaylist();
-            showToast("↕ Playlist réorganisée");
+            showToast("Playlist reordered");
         });
 
         ul.appendChild(li);
@@ -804,9 +826,11 @@ function deleteTrack(index) {
         audio.pause();
         audio.src = "";
         playIcon.className = "fa-solid fa-play";
-        metaDisplay.innerText = "CHARGEZ VOS FICHIERS";
+        updatePausePill();
+        metaDisplay.innerText = "LOAD YOUR FILES";
         document.getElementById('file-format').innerText = "---";
         document.getElementById('file-bitrate').innerText = "--- KBPS";
+        document.getElementById('file-bpm').innerText = "--- BPM";
         resetCoverUI();
         currentTrackIndex = 0;
         renderPlaylist();
@@ -820,7 +844,7 @@ function deleteTrack(index) {
         if (index < currentTrackIndex) currentTrackIndex--;
         renderPlaylist();
     }
-    showToast("🗑 Piste supprimée");
+    showToast("Track deleted");
 }
 
 // ============================================================
@@ -890,12 +914,12 @@ window['__onGCastApiAvailable'] = function (isAvailable) {
                 state === cast.framework.SessionState.SESSION_RESUMED) {
                 castSession = castContext.getCurrentSession();
                 btn.classList.add('casting');
-                showToast("📡 Chromecast connecté");
+                showToast("Chromecast connected");
                 castCurrentTrack();
             } else if (state === cast.framework.SessionState.SESSION_ENDED) {
                 castSession = null;
                 btn.classList.remove('casting');
-                showToast("📡 Chromecast déconnecté");
+                showToast("Chromecast disconnected");
             }
         }
     );
@@ -903,6 +927,6 @@ window['__onGCastApiAvailable'] = function (isAvailable) {
 
 function castCurrentTrack() {
     if (!castSession || !playlist[currentTrackIndex]) return;
-    showToast("⚠ Cast: nécessite une URL de stream");
+    showToast("Cast requires a stream URL");
 }
 
