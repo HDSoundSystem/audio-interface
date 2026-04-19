@@ -55,8 +55,11 @@
                     <div id="display-meta">CHARGEZ VOS FICHIERS</div>
                     <div class="time-rail">
                         <span id="current-time" class="time-box">00:00</span>
-                        <input type="range" id="seek-slider" value="0" min="0"
-                            max="100">
+                        <div id="waveform-container">
+                            <canvas id="waveform-canvas"></canvas>
+                            <div id="waveform-playhead"></div>
+                            <div id="waveform-progress"></div>
+                        </div>
                         <span id="duration" class="time-box">00:00</span>
                     </div>
                 </header>
@@ -154,6 +157,7 @@
                         <span>EQ 10-BAND</span>
                         <button id="eq-reset-btn">FLAT</button>
                     </div>
+                    <canvas id="eq-curve-canvas"></canvas>
                     <div class="eq-bands">
                         <div class="eq-band">
                             <span class="eq-val" id="eq-val-0">0</span>

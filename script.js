@@ -9,7 +9,12 @@ let isShuffle = false, repeatMode = 0, showRemaining = false;
 
 const playIcon = document.getElementById('play-icon');
 const metaDisplay = document.getElementById('display-meta');
-const seekSlider = document.getElementById('seek-slider');
+const waveformContainer = document.getElementById('waveform-container');
+const waveformCanvas    = document.getElementById('waveform-canvas');
+const waveformPlayhead  = document.getElementById('waveform-playhead');
+const waveformProgress  = document.getElementById('waveform-progress');
+const wCtx = waveformCanvas.getContext('2d');
+let waveformData = null; // Float32Array des peaks normalisés
 
 // ============================================================
 // PWA — Service Worker
@@ -91,7 +96,10 @@ document.getElementById('time-toggle-btn').onclick = function () {
 
 audio.ontimeupdate = () => {
     if (!audio.duration) return;
-    seekSlider.value = (audio.currentTime / audio.duration) * 100;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    waveformPlayhead.style.left = pct + '%';
+    waveformProgress.style.width = pct + '%';
+
     const displayTime = showRemaining ? (audio.duration - audio.currentTime) : audio.currentTime;
     const sign = (showRemaining && displayTime > 0) ? "-" : "";
     document.getElementById('current-time').innerText = sign + formatTime(displayTime);
@@ -108,9 +116,116 @@ function formatTime(s) {
     return (m < 10 ? "0" + m : m) + ":" + (sec < 10 ? "0" + sec : sec);
 }
 
-seekSlider.oninput = (e) => {
-    audio.currentTime = (e.target.value / 100) * audio.duration;
-};
+// ============================================================
+// WAVEFORM — dessin & navigation
+// ============================================================
+function drawWaveform() {
+    const W = waveformCanvas.width;
+    const H = waveformCanvas.height;
+    wCtx.clearRect(0, 0, W, H);
+
+    if (!waveformData || waveformData.length === 0) {
+        // Placeholder vide
+        wCtx.fillStyle = '#1a1c20';
+        wCtx.fillRect(0, 0, W, H);
+        return;
+    }
+
+    const mid = H / 2;
+    const barW = Math.max(1, W / waveformData.length);
+
+    wCtx.fillStyle = '#0a0a0a';
+    wCtx.fillRect(0, 0, W, H);
+
+    for (let i = 0; i < waveformData.length; i++) {
+        const x = i * barW;
+        const amp = waveformData[i] * (H * 0.46);
+        const alpha = 0.55 + waveformData[i] * 0.45;
+        wCtx.fillStyle = `rgba(45,158,167,${alpha})`;
+        wCtx.fillRect(x, mid - amp, Math.max(1, barW - 0.5), amp * 2);
+    }
+
+    // Ligne centrale
+    wCtx.fillStyle = 'rgba(45,158,167,0.25)';
+    wCtx.fillRect(0, mid - 0.5, W, 1);
+}
+
+function resizeWaveformCanvas() {
+    waveformCanvas.width  = waveformContainer.offsetWidth;
+    waveformCanvas.height = waveformContainer.offsetHeight;
+    drawWaveform();
+}
+
+async function loadWaveformFromFile(file) {
+    waveformData = null;
+    drawWaveform(); // vide pendant le chargement
+
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const offCtx = new OfflineAudioContext(1, 1, 44100);
+        const decoded = await offCtx.decodeAudioData(arrayBuffer);
+        const raw = decoded.getChannelData(0);
+
+        // Réduire à N samples pour la largeur du canvas
+        const N = waveformCanvas.width || 600;
+        const blockSize = Math.floor(raw.length / N);
+        const peaks = new Float32Array(N);
+        let maxVal = 0;
+
+        for (let i = 0; i < N; i++) {
+            let sum = 0;
+            const start = i * blockSize;
+            for (let j = 0; j < blockSize; j++) {
+                sum += Math.abs(raw[start + j] || 0);
+            }
+            peaks[i] = sum / blockSize;
+            if (peaks[i] > maxVal) maxVal = peaks[i];
+        }
+
+        // Normaliser
+        if (maxVal > 0) for (let i = 0; i < N; i++) peaks[i] /= maxVal;
+
+        waveformData = peaks;
+        drawWaveform();
+    } catch (e) {
+        console.warn('Waveform decode error:', e);
+    }
+}
+
+// Navigation — clic & drag sur le waveform
+function seekFromPointer(e) {
+    const rect = waveformContainer.getBoundingClientRect();
+    const x = (e.clientX ?? e.touches?.[0]?.clientX ?? 0) - rect.left;
+    const pct = Math.max(0, Math.min(1, x / rect.width));
+    if (audio.duration) audio.currentTime = pct * audio.duration;
+}
+
+let isDraggingWaveform = false;
+waveformContainer.addEventListener('mousedown', (e) => {
+    isDraggingWaveform = true;
+    seekFromPointer(e);
+});
+document.addEventListener('mousemove', (e) => {
+    if (isDraggingWaveform) seekFromPointer(e);
+});
+document.addEventListener('mouseup', () => { isDraggingWaveform = false; });
+
+waveformContainer.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    seekFromPointer(e);
+}, { passive: false });
+waveformContainer.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    seekFromPointer(e);
+}, { passive: false });
+
+// Redimensionner le canvas si la fenêtre change
+window.addEventListener('resize', resizeWaveformCanvas);
+
+// Init canvas size
+setTimeout(resizeWaveformCanvas, 0);
+
+
 
 // ============================================================
 // LECTURE & PLAYLIST
@@ -138,6 +253,10 @@ function loadTrack(index) {
     const file = playlist[index];
     document.getElementById('file-format').innerText = file.name.split('.').pop().toUpperCase();
     audio.src = URL.createObjectURL(file);
+
+    // Charger la waveform en parallèle
+    resizeWaveformCanvas();
+    loadWaveformFromFile(file);
     audio.onloadedmetadata = () => {
         const kbps = Math.round((file.size * 8) / audio.duration / 1000);
         document.getElementById('file-bitrate').innerText = kbps + " KBPS";
@@ -247,7 +366,7 @@ document.getElementById('mute-btn').onclick = function () {
     audio.muted = !audio.muted;
     this.classList.toggle('active-danger', audio.muted);
 };
-document.getElementById('bypass-btn').onclick = function () { this.classList.toggle('active-danger'); updateFilters(); };
+document.getElementById('bypass-btn').onclick = function () { this.classList.toggle('active-danger'); updateFilters(); drawEqCurve(); };
 
 document.getElementById('volume-slider').oninput = (e) => {
     audio.volume = e.target.value;
@@ -283,6 +402,7 @@ document.querySelectorAll('.eq-slider').forEach(slider => {
         const val = parseFloat(slider.value);
         document.getElementById(`eq-val-${band}`).textContent = (val > 0 ? '+' : '') + val;
         if (eqFilters[band]) eqFilters[band].gain.value = val;
+        drawEqCurve();
     };
 });
 
@@ -292,8 +412,104 @@ document.getElementById('eq-reset-btn').onclick = () => {
         document.getElementById(`eq-val-${i}`).textContent = '0';
         if (eqFilters[i]) eqFilters[i].gain.value = 0;
     });
+    drawEqCurve();
     showToast("EQ réinitialisé");
 };
+
+// ============================================================
+// EQ CURVE — courbe de réponse fréquentielle
+// ============================================================
+const eqCurveCanvas = document.getElementById('eq-curve-canvas');
+const eqCurveCtx = eqCurveCanvas.getContext('2d');
+
+function drawEqCurve() {
+    const W = eqCurveCanvas.width  = eqCurveCanvas.offsetWidth;
+    const H = eqCurveCanvas.height = eqCurveCanvas.offsetHeight;
+    if (W === 0 || H === 0) return;
+
+    eqCurveCtx.clearRect(0, 0, W, H);
+
+    // Fond
+    eqCurveCtx.fillStyle = '#0a0a0a';
+    eqCurveCtx.fillRect(0, 0, W, H);
+
+    // Ligne centrale (0 dB)
+    const mid = H / 2;
+    eqCurveCtx.strokeStyle = 'rgba(255,255,255,0.06)';
+    eqCurveCtx.lineWidth = 1;
+    eqCurveCtx.beginPath();
+    eqCurveCtx.moveTo(0, mid);
+    eqCurveCtx.lineTo(W, mid);
+    eqCurveCtx.stroke();
+
+    // Calculer la réponse sur N points en fréquence (log scale 20Hz–20kHz)
+    const N = W;
+    const freqMin = 20, freqMax = 20000;
+    const dbRange = 14; // ±14 dB affiché
+    const gains = Array.from(document.querySelectorAll('.eq-slider')).map(s => parseFloat(s.value));
+    const freqs  = EQ_FREQS;
+    const Qs     = 1.4;
+
+    // Pour chaque pixel, somme la contribution de chaque bande (peaking filter)
+    const points = new Float32Array(N);
+    for (let x = 0; x < N; x++) {
+        const freq = freqMin * Math.pow(freqMax / freqMin, x / (N - 1));
+        let totalDb = 0;
+        for (let b = 0; b < freqs.length; b++) {
+            if (gains[b] === 0) continue;
+            // Formule réponse peaking filter en dB
+            const f0 = freqs[b];
+            const gain = gains[b];
+            const Q = Qs;
+            const w  = freq / f0;
+            const w2 = w * w;
+            const A  = Math.pow(10, gain / 40); // amplitude linéaire (demi-gain)
+            // H(w) en amplitude = sqrt( (w2 + A*(w/Q) + 1) / (w2 + (w/Q)/A + 1) )
+            const num = w2 + A * (w / Q) + 1;
+            const den = w2 + (w / Q) / A + 1;
+            totalDb += 20 * Math.log10(Math.sqrt(num / den));
+        }
+        points[x] = totalDb;
+    }
+
+    // Dessiner la courbe
+    eqCurveCtx.beginPath();
+    for (let x = 0; x < N; x++) {
+        const db = Math.max(-dbRange, Math.min(dbRange, points[x]));
+        const y = mid - (db / dbRange) * (mid - 4);
+        if (x === 0) eqCurveCtx.moveTo(x, y);
+        else eqCurveCtx.lineTo(x, y);
+    }
+
+    // Remplissage sous la courbe
+    eqCurveCtx.lineTo(N - 1, mid);
+    eqCurveCtx.lineTo(0, mid);
+    eqCurveCtx.closePath();
+    const grad = eqCurveCtx.createLinearGradient(0, 0, 0, H);
+    grad.addColorStop(0,   'rgba(0, 200, 80, 0.18)');
+    grad.addColorStop(0.5, 'rgba(0, 200, 80, 0.06)');
+    grad.addColorStop(1,   'rgba(0, 200, 80, 0.02)');
+    eqCurveCtx.fillStyle = grad;
+    eqCurveCtx.fill();
+
+    // Ligne verte
+    eqCurveCtx.beginPath();
+    for (let x = 0; x < N; x++) {
+        const db = Math.max(-dbRange, Math.min(dbRange, points[x]));
+        const y = mid - (db / dbRange) * (mid - 4);
+        if (x === 0) eqCurveCtx.moveTo(x, y);
+        else eqCurveCtx.lineTo(x, y);
+    }
+    eqCurveCtx.strokeStyle = '#00c850';
+    eqCurveCtx.lineWidth = 1.5;
+    eqCurveCtx.lineJoin = 'round';
+    eqCurveCtx.stroke();
+}
+
+// Dessiner au démarrage et quand la fenêtre change de taille
+window.addEventListener('resize', drawEqCurve);
+setTimeout(drawEqCurve, 50);
+
 
 // ============================================================
 // NAVIGATION
