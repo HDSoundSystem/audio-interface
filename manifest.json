@@ -1,0 +1,20 @@
+{
+  "short_name": "AudioMixer",
+  "name": "Pro Audio Mixer",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "https://hdsoundsystem.github.io/audio-interface/",
+  "display": "standalone",
+  "theme_color": "#1a1c20",
+  "background_color": "#0f1012"
+}
