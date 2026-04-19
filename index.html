@@ -4,9 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Audio Mixer - Studio Edition</title>
+    <meta name="theme-color" content="#1a1c20">
+    <meta name="description" content="Pro Audio Mixer - Studio Edition PWA">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- Chromecast SDK -->
+    <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
 </head>
 <body>
 
@@ -22,7 +28,6 @@
                 <span id="file-format">---</span>
                 <span id="file-bitrate">--- KBPS</span>
                 <span id="ab-status-badge" style="display: none;">A-B ACTIVE</span>
-                
                 <span id="no-cover-text">NO COVER</span>
                 <img id="album-art" src="" alt="Album Art" style="display: none;">
             </div>
@@ -36,28 +41,33 @@
 
         <footer class="controls-main">
             <div class="control-subgroup left">
-                <button id="time-toggle-btn" class="btn-tool-nav secondary"><i class="fa-regular fa-clock"></i></button>
-                <button id="shuffle-btn" class="btn-tool-nav secondary"><i class="fa-solid fa-shuffle"></i></button>
+                <button id="time-toggle-btn" class="btn-tool-nav secondary" title="Temps restant (T)"><i class="fa-regular fa-clock"></i></button>
+                <button id="shuffle-btn" class="btn-tool-nav secondary" title="Aléatoire (S)"><i class="fa-solid fa-shuffle"></i></button>
             </div>
 
             <div class="control-subgroup main-nav">
-                <button id="rewind-btn" class="btn-tool-nav secondary"><i class="fa-solid fa-backward-fast"></i></button>
-                <button id="prev-btn" class="btn-tool-nav secondary"><i class="fa-solid fa-backward-step"></i></button>
-                <button id="play-pause" class="btn-play"><i class="fa-solid fa-play" id="play-icon"></i></button>
-                <button id="next-btn" class="btn-tool-nav secondary"><i class="fa-solid fa-forward-step"></i></button>
-                <button id="forward-btn" class="btn-tool-nav secondary"><i class="fa-solid fa-forward-fast"></i></button>
+                <button id="rewind-btn" class="btn-tool-nav secondary" title="Reculer 10s (←)"><i class="fa-solid fa-backward-fast"></i></button>
+                <button id="prev-btn" class="btn-tool-nav secondary" title="Piste précédente (P)"><i class="fa-solid fa-backward-step"></i></button>
+                <button id="play-pause" class="btn-play" title="Lecture/Pause (Espace)"><i class="fa-solid fa-play" id="play-icon"></i></button>
+                <button id="next-btn" class="btn-tool-nav secondary" title="Piste suivante (N)"><i class="fa-solid fa-forward-step"></i></button>
+                <button id="forward-btn" class="btn-tool-nav secondary" title="Avancer 10s (→)"><i class="fa-solid fa-forward-fast"></i></button>
             </div>
 
             <div class="control-subgroup right">
-                <button id="repeat-btn" class="btn-tool-nav secondary"><i class="fa-solid fa-repeat"></i></button>
-                <button id="ab-loop-btn" class="btn-tool-nav secondary">A-B</button>
+                <button id="repeat-btn" class="btn-tool-nav secondary" title="Répétition (R)"><i class="fa-solid fa-repeat"></i></button>
+                <button id="ab-loop-btn" class="btn-tool-nav secondary" title="Boucle A-B">A-B</button>
             </div>
         </footer>
 
         <nav class="extra-functions">
             <input type="file" id="file-upload" style="display:none" accept="audio/*" multiple>
-            <button id="eject-btn" class="btn-bottom-tool"><i class="fa-solid fa-eject"></i></button>
-            <button class="btn-bottom-tool"><i class="fa-solid fa-gear"></i></button>
+            <button id="eject-btn" class="btn-bottom-tool" title="Charger des fichiers (O)"><i class="fa-solid fa-eject"></i></button>
+            <!-- Chromecast -->
+            <button id="cast-btn" class="btn-bottom-tool" title="Chromecast" style="display:none">
+                <google-cast-button></google-cast-button>
+            </button>
+            <button id="kbd-help-btn" class="btn-bottom-tool" title="Raccourcis clavier (?)"><i class="fa-solid fa-keyboard"></i></button>
+            <button class="btn-bottom-tool" title="Paramètres"><i class="fa-solid fa-gear"></i></button>
         </nav>
     </main>
 
@@ -92,6 +102,7 @@
     </aside>
 </div>
 
+<!-- Modal Cover -->
 <div id="modal-overlay" class="modal-overlay">
     <div class="modal-content">
         <img id="modal-img" src="" alt="Cover">
@@ -103,6 +114,30 @@
         <button id="close-modal" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
     </div>
 </div>
+
+<!-- Modal Raccourcis Clavier -->
+<div id="kbd-modal" class="modal-overlay" style="display:none;">
+    <div class="modal-content" style="background:#1a1c20; border:1px solid #2a2d32; border-radius:15px; padding:30px; max-width:400px; text-align:left;">
+        <button id="close-kbd-modal" class="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+        <h2 style="color:var(--accent); margin-top:0; font-size:1rem; letter-spacing:2px;">RACCOURCIS CLAVIER</h2>
+        <table style="width:100%; border-collapse:collapse; font-size:0.8rem; color:#aaa;">
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">Espace</td><td>Lecture / Pause</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">←  →</td><td>Reculer / Avancer 10s</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">N</td><td>Piste suivante</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">P</td><td>Piste précédente</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">S</td><td>Mode aléatoire</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">R</td><td>Mode répétition</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">M</td><td>Mute</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">T</td><td>Afficher temps restant</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">O</td><td>Ouvrir des fichiers</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">↑  ↓</td><td>Volume +/- 5%</td></tr>
+            <tr><td style="padding:6px 0; color:var(--accent); font-weight:700;">?</td><td>Afficher cette aide</td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="kbd-toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 <script src="script.js"></script>
