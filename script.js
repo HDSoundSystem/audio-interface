@@ -154,12 +154,10 @@ document.getElementById('ab-loop-btn').onclick = function() {
     if (loopA === null) {
         loopA = audio.currentTime;
         this.classList.add('active-ab-a');
-        this.innerText = "A-";
     } else if (loopB === null) {
         loopB = audio.currentTime;
         this.classList.remove('active-ab-a');
         this.classList.add('active-ab-b');
-        this.innerText = "A-B";
         badge.style.display = "block";
     } else {
         resetAB();
@@ -170,7 +168,6 @@ function resetAB() {
     loopA = null; loopB = null;
     const btn = document.getElementById('ab-loop-btn');
     btn.classList.remove('active-ab-a', 'active-ab-b');
-    btn.innerText = "A-B";
     document.getElementById('ab-status-badge').style.display = "none";
 }
 

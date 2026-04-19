@@ -182,6 +182,27 @@ body {
 .active-ab-a { color: var(--danger) !important; font-weight: 900; }
 .active-ab-b { color: var(--danger) !important; text-shadow: 0 0 5px rgba(255,68,68,0.5); }
 
+#ab-loop-btn {
+    min-width: 36px;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+#ab-loop-btn .ab-a,
+#ab-loop-btn .ab-sep,
+#ab-loop-btn .ab-b { transition: color 0.2s, opacity 0.2s; }
+
+/* État A défini : A en rouge, tiret et B grisés */
+#ab-loop-btn.active-ab-a .ab-a { color: var(--danger); }
+#ab-loop-btn.active-ab-a .ab-sep,
+#ab-loop-btn.active-ab-a .ab-b  { opacity: 0.3; }
+
+/* État B défini : A-B entièrement en rouge */
+#ab-loop-btn.active-ab-b .ab-a,
+#ab-loop-btn.active-ab-b .ab-sep,
+#ab-loop-btn.active-ab-b .ab-b  { color: var(--danger); text-shadow: 0 0 5px rgba(255,68,68,0.4); }
+
 /* BOTTOM TOOLS (EJECT / GEAR) */
 .extra-functions { display: flex; justify-content: space-between; border-top: 1px solid #2a2d32; padding-top: 12px; margin-top: auto; }
 .btn-bottom-tool { background: none; border: none; color: #444; font-size: 1.2rem; cursor: pointer; transition: color 0.2s; }
