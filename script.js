@@ -517,19 +517,67 @@ document.querySelectorAll('.eq-slider').forEach(slider => {
         const val = parseFloat(slider.value);
         document.getElementById(`eq-val-${band}`).textContent = (val > 0 ? '+' : '') + val;
         if (eqFilters[band]) eqFilters[band].gain.value = val;
+        // Deactivate preset buttons on manual change
+        document.querySelectorAll('.eq-preset-btn').forEach(btn => btn.classList.remove('active'));
+        activePreset = null;
         drawEqCurve();
     };
 });
 
 document.getElementById('eq-reset-btn').onclick = () => {
-    document.querySelectorAll('.eq-slider').forEach((slider, i) => {
-        slider.value = 0;
-        document.getElementById(`eq-val-${i}`).textContent = '0';
-        if (eqFilters[i]) eqFilters[i].gain.value = 0;
-    });
-    drawEqCurve();
+    applyEqPreset('flat');
     showToast("EQ reset");
 };
+
+// ============================================================
+// EQ PRESETS
+// ============================================================
+// Values in dB for bands: 31, 62, 125, 250, 500, 1k, 2k, 4k, 8k, 16k
+const EQ_PRESETS = {
+    flat:       [ 0,    0,    0,    0,    0,    0,    0,    0,    0,    0  ],
+    rock:       [ 4,    3,    2,    0,   -1,   -1,    1,    3,    4,    4  ],
+    pop:        [-1,    0,    2,    3,    4,    3,    1,    0,   -1,   -1  ],
+    jazz:       [ 3,    2,    1,    2,   -1,   -1,    0,    1,    2,    3  ],
+    classical:  [ 4,    3,    2,    1,   -1,   -1,    0,    2,    3,    4  ],
+    bass:       [ 8,    7,    5,    3,    1,    0,    0,    0,    0,    0  ],
+    vocal:      [-2,   -1,    0,    2,    4,    4,    3,    1,    0,   -1  ],
+    electronic: [ 5,    4,    1,    0,   -2,    0,    1,    3,    5,    6  ],
+};
+
+let activePreset = 'flat';
+
+function applyEqPreset(name) {
+    const values = EQ_PRESETS[name];
+    if (!values) return;
+    activePreset = name;
+
+    document.querySelectorAll('.eq-slider').forEach((slider, i) => {
+        slider.value = values[i];
+        const v = values[i];
+        document.getElementById(`eq-val-${i}`).textContent = (v > 0 ? '+' : '') + v;
+        if (eqFilters[i]) eqFilters[i].gain.value = v;
+    });
+
+    // Highlight active preset button
+    document.querySelectorAll('.eq-preset-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.preset === name);
+    });
+
+    drawEqCurve();
+}
+
+document.querySelectorAll('.eq-preset-btn').forEach(btn => {
+    btn.onclick = () => {
+        applyEqPreset(btn.dataset.preset);
+        showToast('EQ: ' + btn.textContent);
+    };
+});
+
+// Mark flat as active on load
+setTimeout(() => {
+    const flatBtn = document.querySelector('.eq-preset-btn[data-preset="flat"]');
+    if (flatBtn) flatBtn.classList.add('active');
+}, 60);
 
 // ============================================================
 // EQ CURVE — courbe de réponse fréquentielle
@@ -939,30 +987,22 @@ function deleteTrack(index) {
 // ============================================================
 const sidebar = document.getElementById('playlist-sidebar');
 let osDropCounter = 0;
-let isDraggingExternal = false;
 
-// Detect when OS files enter the browser window
-document.addEventListener('dragenter', (e) => {
-    if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
-        isDraggingExternal = true;
-    }
-});
-document.addEventListener('dragleave', (e) => {
-    if (e.relatedTarget === null) {
-        isDraggingExternal = false;
-        osDropCounter = 0;
-        sidebar.classList.remove('drag-active');
+// Always prevent browser from opening dropped files
+document.addEventListener('dragover', (e) => { e.preventDefault(); });
+document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    if (!sidebar.contains(e.target) && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addFiles(Array.from(e.dataTransfer.files));
     }
 });
 
 sidebar.addEventListener('dragenter', (e) => {
-    if (!isDraggingExternal) return;
     e.preventDefault();
     osDropCounter++;
     sidebar.classList.add('drag-active');
 });
-sidebar.addEventListener('dragleave', () => {
-    if (!isDraggingExternal) return;
+sidebar.addEventListener('dragleave', (e) => {
     osDropCounter--;
     if (osDropCounter <= 0) {
         osDropCounter = 0;
@@ -970,31 +1010,18 @@ sidebar.addEventListener('dragleave', () => {
     }
 });
 sidebar.addEventListener('dragover', (e) => {
-    if (!isDraggingExternal) return;
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        e.dataTransfer.dropEffect = 'copy';
+    }
 });
 sidebar.addEventListener('drop', (e) => {
-    if (!isDraggingExternal) return;
     e.preventDefault();
+    e.stopPropagation();
     osDropCounter = 0;
-    isDraggingExternal = false;
     sidebar.classList.remove('drag-active');
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) addFiles(files);
-});
-
-// Prevent browser from opening dropped files outside sidebar
-document.addEventListener('dragover', (e) => {
-    if (isDraggingExternal) e.preventDefault();
-});
-document.addEventListener('drop', (e) => {
-    if (!isDraggingExternal) return;
-    e.preventDefault();
-    isDraggingExternal = false;
-    if (!sidebar.contains(e.target)) {
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) addFiles(files);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addFiles(Array.from(e.dataTransfer.files));
     }
 });
 
