@@ -27,12 +27,7 @@
     <body>
 
         <div class="main-app-wrapper">
-            <!-- VU METRE GAUCHE -->
-            <div class="vu-col vu-col-left">
-                <span class="vu-col-label">L</span>
-                <div id="vu-meter-left" class="vu-meter"></div>
-            </div>
-            <aside class="playlist-sidebar" id="playlist-sidebar">
+<aside class="playlist-sidebar" id="playlist-sidebar">
                 <div class="sidebar-header">
                     <span><i class="fa-solid fa-list-ul"></i> PLAYLIST</span>
                     <div class="header-right-group">
@@ -50,6 +45,12 @@
                         style="padding:12px 20px;color:#555;font-size:0.75rem;">No
                         file loaded</li></ul>
             </aside>
+
+<!-- VU METRE GAUCHE -->
+            <div class="vu-col vu-col-left">
+                <span class="vu-col-label">L</span>
+                <div id="vu-meter-left" class="vu-meter"></div>
+            </div>
 
             <main class="player-container">
                 <header class="display-section">
@@ -137,6 +138,12 @@
                 </nav>
             </main>
 
+            <!-- VU METRE DROIT -->
+            <div class="vu-col vu-col-right">
+                <span class="vu-col-label">R</span>
+                <div id="vu-meter-right" class="vu-meter"></div>
+            </div>
+
             <aside class="mixer-sidebar">
                 <div class="sidebar-header"><i class="fa-solid fa-sliders"></i>
                     MIXER</div>
@@ -169,6 +176,15 @@
                         <div class="eq-header">
                             <span>EQ 10-BAND</span>
                             <button id="eq-reset-btn">FLAT</button>
+                        </div>
+                        <div class="eq-presets">
+                            <button class="eq-preset-btn" data-preset="rock">ROCK</button>
+                            <button class="eq-preset-btn" data-preset="pop">POP</button>
+                            <button class="eq-preset-btn" data-preset="jazz">JAZZ</button>
+                            <button class="eq-preset-btn" data-preset="classical">CLASS.</button>
+                            <button class="eq-preset-btn" data-preset="bass">BASS+</button>
+                            <button class="eq-preset-btn" data-preset="vocal">VOCAL</button>
+                            <button class="eq-preset-btn" data-preset="electronic">ELEC.</button>
                         </div>
                         <canvas id="eq-curve-canvas"></canvas>
                         <div class="eq-bands">
@@ -243,18 +259,7 @@
                                 <span class="eq-freq">16k</span>
                             </div>
                         </div>
-                        <div class="fx-section-inline">
-                            <button id="eq-pop-btn"
-                                class="btn-toggle">POP</button>
-                            <button id="eq-rock-btn"
-                                class="btn-toggle">ROCK</button>
-                            <button id="eq-classic-btn"
-                                class="btn-toggle">CLASSIC</button>
-                            <button id="eq-live-btn"
-                                class="btn-toggle">LIVE</button>
-                            <button id="eq-vocal-btn"
-                                class="btn-toggle">VOCAL</button>
-                        </div>
+                        
                         <div class="fx-section-inline">
                             <button id="mono-btn"
                                 class="btn-toggle">MONO</button>
@@ -274,11 +279,6 @@
                     </div>
                 </div>
             </aside>
-            <!-- VU METRE DROIT -->
-            <div class="vu-col vu-col-right">
-                <span class="vu-col-label">R</span>
-                <div id="vu-meter-right" class="vu-meter"></div>
-            </div>
         </div>
 
         <!-- Modal Cover -->
@@ -345,10 +345,7 @@
         <!-- Toast -->
         <div id="kbd-toast"></div>
 
-        <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
-        <script src="script.js"></script>
-    <!-- Modale confirmation rafraîchissement -->
+
 <div id="power-modal" class="modal-overlay" style="display:none;">
     <div class="power-modal-box">
         <i class="fa-solid fa-power-off power-modal-icon"></i>
@@ -361,5 +358,9 @@
     </div>
 </div>
 
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+        <script src="script.js"></script>
+    <!-- Modale confirmation rafraîchissement -->
 </body>
 </html>
