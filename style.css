@@ -705,7 +705,7 @@ body {
 
 .mixer-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px 10px;
     padding: 20px;
     justify-items: center;
@@ -796,7 +796,7 @@ body {
 }
 
 .fx-section-inline {
-    grid-column: 1 / span 3;
+    grid-column: 1 / span 4;
     display: flex;
     gap: 10px;
     width: 100%;
@@ -1073,6 +1073,15 @@ google-cast-button {
     background: var(--cursor-green) center/100% 100% no-repeat;
 }
 
+/* MID → vert */
+#mid-slider::-webkit-slider-thumb {
+    background: var(--cursor-green) center/100% 100% no-repeat;
+}
+
+#mid-slider::-moz-range-thumb {
+    background: var(--cursor-green) center/100% 100% no-repeat;
+}
+
 /* HI → vert */
 #treble-slider::-webkit-slider-thumb {
     background: var(--cursor-green) center/100% 100% no-repeat;
@@ -1082,7 +1091,11 @@ google-cast-button {
     background: var(--cursor-green) center/100% 100% no-repeat;
 }
 
-/* PITCH → bleu */
+/* PITCH → bleu, centré dans la grille 4 colonnes */
+.pitch-area {
+    grid-column: 2 / span 2;
+}
+
 #pitch-slider::-webkit-slider-thumb {
     background: var(--cursor-blue) center/100% 100% no-repeat;
 }

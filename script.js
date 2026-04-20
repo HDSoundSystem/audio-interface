@@ -3,7 +3,7 @@ audio.volume = 0.05;
 audio.crossOrigin = "anonymous";
 
 let playlist = [], playlistCovers = [], currentTrackIndex = 0;
-let audioContext, source, bassFilter, trebleFilter;
+let audioContext, source, bassFilter, midFilter, trebleFilter;
 let meterSplitter, meterLeftAnalyser, meterRightAnalyser, meterAnimationFrame = null;
 let loopA = null, loopB = null;
 let isShuffle = false, repeatMode = 0, showRemaining = false;
@@ -132,6 +132,8 @@ function initAudio() {
     source = audioContext.createMediaElementSource(audio);
     bassFilter = audioContext.createBiquadFilter();
     bassFilter.type = "lowshelf"; bassFilter.frequency.value = 200;
+    midFilter = audioContext.createBiquadFilter();
+    midFilter.type = "peaking"; midFilter.frequency.value = 1000; midFilter.Q.value = 0.8; midFilter.gain.value = 0;
     trebleFilter = audioContext.createBiquadFilter();
     trebleFilter.type = "highshelf"; trebleFilter.frequency.value = 3000;
 
@@ -154,7 +156,8 @@ function initAudio() {
 
     // Chaîne stéréo par défaut : source → bass → treble → eq[0..9] → destination
     source.connect(bassFilter);
-    bassFilter.connect(trebleFilter);
+    bassFilter.connect(midFilter);
+    midFilter.connect(trebleFilter);
     let prev = trebleFilter;
     eqFilters.forEach(f => { prev.connect(f); prev = f; });
     // `prev` = dernier filtre EQ
@@ -433,11 +436,13 @@ function updateFilters() {
     if (!bassFilter) return;
     const bypassed = document.getElementById('bypass-btn').classList.contains('active-danger');
     let b = bypassed ? 0 : parseFloat(document.getElementById('bass-slider').value);
+    let m = bypassed ? 0 : parseFloat(document.getElementById('mid-slider').value);
     let t = bypassed ? 0 : parseFloat(document.getElementById('treble-slider').value);
     if (!bypassed && document.getElementById('loudness-btn').classList.contains('active-blue')) {
         b += 5; t += 5;
     }
     bassFilter.gain.value = b;
+    midFilter.gain.value = m;
     trebleFilter.gain.value = t;
     // Bypass EQ 10 bandes
     eqFilters.forEach((f, i) => {
@@ -486,6 +491,12 @@ document.getElementById('bass-slider').oninput = (e) => {
     initAudio();
     updateFilters();
     document.getElementById('val-bass').innerText = e.target.value + "dB";
+    drawEqCurve();
+};
+document.getElementById('mid-slider').oninput = (e) => {
+    initAudio();
+    updateFilters();
+    document.getElementById('val-mid').innerText = e.target.value + "dB";
     drawEqCurve();
 };
 document.getElementById('treble-slider').oninput = (e) => {
