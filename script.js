@@ -435,7 +435,7 @@ function updateFilters() {
     let b = bypassed ? 0 : parseFloat(document.getElementById('bass-slider').value);
     let t = bypassed ? 0 : parseFloat(document.getElementById('treble-slider').value);
     if (!bypassed && document.getElementById('loudness-btn').classList.contains('active-blue')) {
-        b += 12; t += 8;
+        b += 5; t += 5;
     }
     bassFilter.gain.value = b;
     trebleFilter.gain.value = t;
