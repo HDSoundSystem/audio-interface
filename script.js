@@ -607,14 +607,14 @@ function buildEqFrequencies(count, minFreq, maxFreq) {
 function getCombinedEqResponse(frequencies) {
     const magnitudes = new Float32Array(frequencies.length).fill(1);
 
-    if (!audioContext || !bassFilter || !trebleFilter || eqFilters.length !== EQ_FREQS.length) {
+    if (!audioContext || !bassFilter || !midFilter || !trebleFilter || eqFilters.length !== EQ_FREQS.length) {
         return magnitudes;
     }
 
     const response = new Float32Array(frequencies.length);
     const phase = new Float32Array(frequencies.length);
 
-    [bassFilter, trebleFilter, ...eqFilters].forEach(filter => {
+    [bassFilter, midFilter, trebleFilter, ...eqFilters].forEach(filter => {
         filter.getFrequencyResponse(frequencies, response, phase);
         for (let i = 0; i < magnitudes.length; i++) {
             magnitudes[i] *= Math.max(response[i], 1e-6);
