@@ -55,12 +55,6 @@ function formatNowPlayingMeta(fileName, title, album, artist) {
     ].join(" - ");
 }
 
-function formatBpmValue(rawBpm) {
-    if (rawBpm === undefined || rawBpm === null || rawBpm === "") return "--- BPM";
-    const bpm = parseFloat(String(rawBpm).replace(",", "."));
-    if (!Number.isFinite(bpm) || bpm <= 0) return "--- BPM";
-    return `${Math.round(bpm)} BPM`;
-}
 
 function updatePausePill() {
     pausePill.style.display = (audio.src && audio.paused) ? "inline-flex" : "none";
@@ -364,9 +358,8 @@ function loadTrack(index) {
     if (window.jsmediatags) {
         window.jsmediatags.read(file, {
             onSuccess: (tag) => {
-                const { title, artist, album, picture, bpm, TBPM } = tag.tags;
+                const { title, artist, album, picture } = tag.tags;
                 metaDisplay.innerText = formatNowPlayingMeta(file.name, title, album, artist);
-                document.getElementById('file-bpm').innerText = formatBpmValue(bpm ?? TBPM);
                 if (picture) {
                     let b64 = "";
                     for (let i = 0; i < picture.data.length; i++) b64 += String.fromCharCode(picture.data[i]);
@@ -384,13 +377,11 @@ function loadTrack(index) {
             },
             onError: () => {
                 metaDisplay.innerText = formatNowPlayingMeta(file.name, "", "", "");
-                document.getElementById('file-bpm').innerText = "--- BPM";
                 resetCoverUI();
             }
         });
     } else {
         metaDisplay.innerText = formatNowPlayingMeta(file.name, "", "", "");
-        document.getElementById('file-bpm').innerText = "--- BPM";
     }
     audio.play();
     playIcon.className = "fa-solid fa-pause";
@@ -973,7 +964,6 @@ function deleteTrack(index) {
         metaDisplay.innerText = "LOAD YOUR FILES";
         document.getElementById('file-format').innerText = "---";
         document.getElementById('file-bitrate').innerText = "--- KBPS";
-        document.getElementById('file-bpm').innerText = "--- BPM";
         resetCoverUI();
         currentTrackIndex = 0;
         renderPlaylist();

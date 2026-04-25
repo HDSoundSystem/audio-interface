@@ -338,27 +338,21 @@ body {
     z-index: 10;
 }
 
-#file-bitrate,
-#file-bpm {
+#file-bitrate {
     position: absolute;
     left: 10px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0,0,0,0.7);
     color: var(--accent);
-    font-size: 0.675rem;
+    font-size: 0.55rem;
     font-weight: 900;
     padding: 2px 6px;
     border-radius: 3px;
     z-index: 10;
     border: 1px solid var(--accent);
-}
-
-#file-bitrate {
     top: 38px;
 }
 
-#file-bpm {
-    top: 62px;
-}
+
 
 #ab-status-badge {
     position: absolute;
