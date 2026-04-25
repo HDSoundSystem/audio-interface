@@ -552,7 +552,7 @@ const EQ_PRESETS = {
     classical:  [ 4,    3,    2,    1,   -1,   -1,    0,    2,    3,    4  ],
     bass:       [ 8,    7,    5,    3,    1,    0,    0,    0,    0,    0  ],
     vocal:      [-2,   -1,    0,    2,    4,    4,    3,    1,    0,   -1  ],
-    electronic: [ 5,    4,    1,    0,   -2,    0,    1,    3,    5,    6  ],
+    live:       [ -2,   0,    3,    4,    3,    2,    1,    2,    3,    2  ],
 };
 
 let activePreset = 'flat';
